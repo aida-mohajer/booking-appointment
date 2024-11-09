@@ -1,7 +1,9 @@
+import { CustomRequest } from "../custom-request";
 import { AppDataSource } from "../data-source";
 import { Doctor } from "../entity/doctor.entity";
 import { Feedback } from "../entity/feedback.entity";
 import { Patient } from "../entity/patient.entity";
+import { Role } from "../enum/role.enum";
 import { FeedbackDto } from "./dto/feedback.dto";
 import { ReadGetAllFeedbackDto } from "./dto/raed-getall-feedbacks.dto";
 import { UpdateFeedbackDto } from "./dto/update-feedback.dto";
@@ -101,6 +103,13 @@ export class FeedbackService {
     patientId: number
   ): Promise<{ message?: string; error?: string }> {
     try {
+      const patient = await this.patientRepo.findOne({
+        where: { id: patientId },
+      });
+      if (!patient) {
+        return { error: "Patient not found" };
+      }
+
       const feedback = await this.feedbackRepo.findOne({
         where: { id: feedbackId },
       });
@@ -118,6 +127,7 @@ export class FeedbackService {
       if (!doctor) {
         return { error: "Doctor not found" };
       }
+
       Object.assign(feedback, data);
 
       await this.feedbackRepo.save(feedback);
@@ -135,6 +145,7 @@ export class FeedbackService {
   }
 
   async deleteFeedback(
+    req: CustomRequest,
     feedbackId: number,
     patientId: number
   ): Promise<{ error?: string; message?: string }> {
@@ -146,7 +157,8 @@ export class FeedbackService {
         return { error: "Feedback not found" };
       }
 
-      if (feedback.patientId !== patientId) {
+      const isAdmin = req.user?.role === Role.Admin;
+      if (!isAdmin && feedback.patientId !== patientId) {
         return { error: "You are not authorized to delete this feedback" };
       }
 

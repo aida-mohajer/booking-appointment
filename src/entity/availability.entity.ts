@@ -20,7 +20,7 @@ export class Availability extends Base {
   doctorId!: number;
 
   @Column()
-  availableDate!: string;
+  availableDate!: Date;
 
   @Column({ default: true })
   isAvailable!: boolean;

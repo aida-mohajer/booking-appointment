@@ -17,20 +17,14 @@
 
 /**
  * @swagger
- * /api/appointments/create/{doctorId}/availability/{availabilityId}:
+ * /api/appointments/create/availability/{availabilityId}:
  *   post:
  *     summary: Create a new appointment
- *     description: This endpoint allows authenticated users to create a new appointment for a specific doctor and availability.
+ *     description: This endpoint allows authenticated patients to create a new appointment for a specific doctor and availability.
  *     tags: [Appointment]
  *     security:
  *       - bearerAuth: []  # Assuming you are using Bearer token for authentication
  *     parameters:
- *       - name: doctorId
- *         in: path
- *         required: true
- *         description: ID of the doctor for whom the appointment is created
- *         schema:
- *           type: number
  *       - name: availabilityId
  *         in: path
  *         required: true
@@ -52,85 +46,98 @@
  * @swagger
  * /api/appointments/by-dr:
  *   get:
- *     summary: Get appointments by doctor
- *     description: This endpoint retrieves all appointments for a specific doctor.
+ *     summary: Retrieve appointments by doctor
+ *     description: Retrieve a list of appointments for the authenticated doctor within a specified date range. Allows filtering by availability and supports pagination and search.
  *     tags: [Appointment]
  *     security:
- *       - bearerAuth: []  # Assuming you are using Bearer token for authentication
- *     responses:
- *       200:
- *         description: List of appointments retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   appointmentId:
- *                     type: string
- *                     description: ID of the appointment
- *                   doctorId:
- *                     type: string
- *                     description: ID of the doctor
- *                   patientId:
- *                     type: string
- *                     description: ID of the patient
- *                   date:
- *                     type: string
- *                     format: date-time
- *                     description: Date and time for the appointment
- *       401:
- *         description: Unauthorized, user not authenticated
- */
-
-/**
- * @swagger
- * /api/appointments/by-patient/{doctorId}:
- *   get:
- *     summary: Get appointments by patient for a specific doctor
- *     description: This endpoint retrieves all appointments made by a specific patient for a specific doctor.
- *     tags: [Appointment]
- *     security:
- *       - bearerAuth: []  # Assuming you are using Bearer token for authentication
+ *       - bearerAuth: []
  *     parameters:
- *       - name: doctorId
- *         in: path
+ *       - in: query
+ *         name: startDate
  *         required: true
- *         description: ID of the doctor to retrieve appointments for
  *         schema:
- *           type: number
+ *           type: string
+ *           format: date
+ *           example: "2024-12-01"
+ *         description: Start date for filtering appointments (inclusive).
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2024-12-31"
+ *         description: End date for filtering appointments (inclusive).
+ *       - in: query
+ *         name: page
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 10
+ *         description: Number of items per page for pagination.
+ *       - in: query
+ *         name: name
+ *         schema:
+ *           type: string
+ *           example: "checkup"
+ *         description: Optional search term for filtering appointments.
  *     responses:
  *       200:
- *         description: List of appointments retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   appointmentId:
- *                     type: number
- *                     description: ID of the appointment
- *                   doctorId:
- *                     type: number
- *                     description: ID of the doctor
- *                   patientId:
- *                     type: number
- *                     description: ID of the patient
- *                   date:
- *                     type: string
- *                     description: Date and time for the appointment
+ *         description: Successfully retrieved the list of appointments for the doctor.
+ *       400:
+ *         description: Bad Request - Invalid or missing parameters
  *       401:
- *         description: Unauthorized, user not authenticated
- *       404:
- *         description: Appointment not found
+ *         description: Unauthorized - Doctor ID is missing or invalid
+ *       500:
+ *         description: Internal Server Error
+ */
+/**
+ * @swagger
+ * /api/appointments/by-patient:
+ *   get:
+ *     summary: Retrieve appointments by patient
+ *     description: Retrieve a list of appointments for the authenticated user within a specified date range. Allows filtering by availability.
+ *     tags: [Appointment]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2024-12-01"
+ *         description: Start date for filtering appointments (inclusive).
+ *       - in: query
+ *         name: endDate
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2024-12-31"
+ *         description: End date for filtering appointments (inclusive).
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the list of appointments for the patient.
+ *       400:
+ *         description: Bad Request - Invalid or missing parameters
+ *       401:
+ *         description: Unauthorized - Patient ID is missing or invalid
+ *       500:
+ *         description: Internal Server Error
  */
 
 /**
  * @swagger
- * /api/appointments/remove/{appointmentId}/calendar/{calendarId}:
+ * /api/appointments/remove/{appointmentId}:
  *   delete:
  *     summary: Cancel an appointment
  *     description: This endpoint allows authenticated users to cancel an appointment by its ID.
@@ -142,12 +149,6 @@
  *         in: path
  *         required: true
  *         description: ID of the appointment to cancel
- *         schema:
- *           type: number
- *       - name: calendarId
- *         in: path
- *         required: true
- *         description: ID of the calendar for fixing status
  *         schema:
  *           type: number
  *     responses:

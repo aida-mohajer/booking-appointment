@@ -8,16 +8,15 @@ import swaggerUi from "swagger-ui-express";
 import { errorHandler } from "./middlewares/errorHandler";
 import { patientRouter } from "./user/patient/patient.routes";
 import { drRouter } from "./user/doctor/doctor.routes";
-// import { attrRouter } from "./attribute/attribute.routes";
 import { specializationRouter } from "./specialization/specialization.routes";
 import { feedbackRouter } from "./feedback/feedback.routes";
 import { uploadImageRouter } from "./dr-image/image.routes";
-// import { calendarRouter } from "./calender/calendar.routes";
 import { tokenRouter } from "./refreshToken/token.routes";
 import { adminRouter } from "./user/admin/admin.routes";
 import { cityRouter } from "./city/city.routes";
 import { availabilityRouter } from "./availability/availibility.routes";
 import { appointmentRouter } from "./appointment/appointment.routes";
+// import swaggerDocument from "./swagger-output.json";
 
 dotenv.config();
 
@@ -25,6 +24,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "../src/images")));
+// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/api/patients", patientRouter);
 app.use("/api/doctors", drRouter);
@@ -76,7 +76,6 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-console.log("http://localhost:3000/api-docs/");
 
 const port = process.env.PORT || 3000;
 
@@ -84,6 +83,7 @@ AppDataSource.initialize()
   .then(async () => {
     app.listen(port, () => {
       console.log(`Server is running on http://localhost: ${port}`);
+      console.log("http://localhost:3000/api-docs/");
     });
     console.log("Data Source has been initialized!");
   })

@@ -9,10 +9,6 @@ export class SpecializationController {
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
-    const role = req.user?.role;
-    if (!role) {
-      return res.status(401).json({ error: "Not authorized" });
-    }
     const data = req.body;
     const result = await this.specializationService.createSpecialization(data);
     if (result.error) {
@@ -54,9 +50,10 @@ export class SpecializationController {
     const specializationIds = req.body;
     const isAdmin = req.user?.role === "admin";
     const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
-
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
     }
 
     const result = await this.specializationService.addSpecializationIdsToDr(
@@ -76,9 +73,10 @@ export class SpecializationController {
     const specializationId = Number(req.params.specializationId);
     const isAdmin = req.user?.role === "admin";
     const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
-
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
     }
 
     const result = await this.specializationService.removeDrSpecialization(

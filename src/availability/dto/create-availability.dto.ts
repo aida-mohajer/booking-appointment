@@ -1,12 +1,8 @@
-import { IsBoolean, IsNotEmpty, IsOptional } from "class-validator";
-import { IsCustomDateTimeString } from "../validations/dateTime.validation";
+import { IsNotEmpty } from "class-validator";
+import { IsCustomDateTimeString } from "../decorators/custom-dateTime.decorator";
 
 export class CreateAvailabilityDto {
   @IsNotEmpty()
   @IsCustomDateTimeString()
-  availableDate!: string;
-
-  @IsOptional()
-  @IsBoolean({ message: "isAvailable must be a boolean" })
-  isAvailable?: boolean;
+  availableDate!: Date;
 }

@@ -1,106 +1,3 @@
-// /**
-//  * @swagger
-//  * /api/doctors:
-//  *   get:
-//  *     summary: Retrieve a list of doctors
-//  *     description: This endpoint retrieves a list of doctors with optional filtering by specialization IDs, city ID, and searching by doctor name. Supports pagination and sorting.
-//  *     tags: [Doctors]
-//  *     parameters:
-//  *       - name: page
-//  *         in: query
-//  *         description: Page number for pagination
-//  *         required: false
-//  *         schema:
-//  *           type: integer
-//  *           default: 1
-//  *       - name: limit
-//  *         in: query
-//  *         description: Number of products per page
-//  *         required: false
-//  *         schema:
-//  *           type: integer
-//  *           default: 10
-//  *       - name: sortBy
-//  *         in: query
-//  *         required: false
-//  *         description: Sorting options (e.g., "oldest", "newest", "highestRated", "lowestRated").
-//  *         schema:
-//  *           type: string
-//  *           enum:
-//  *             - oldest
-//  *             - newest
-//  *             - highestRated
-//  *             - lowestRated
-//  *       - name: specializationIds
-//  *         in: query
-//  *         required: false
-//  *         description: Comma-separated list of specialization IDs to filter doctors.
-//  *         schema:
-//  *           type: array
-//  *           items:
-//  *             type: string
-//  *           example: ["specId1", "specId2"]
-//  *       - name: cityId
-//  *         in: query
-//  *         required: false
-//  *         description: ID of the city to filter doctors.
-//  *         schema:
-//  *           type: string
-//  *           example: "123"
-//  *       - name: doctorName
-//  *         in: query
-//  *         required: false
-//  *         description: Filter doctors by name.
-//  *         schema:
-//  *           type: string
-//  *           example: "John"
-//  *
-//  *     responses:
-//  *       '200':
-//  *         description: Successfully retrieved list of doctors.
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 message:
-//  *                   type: string
-//  *                   example: "Doctors retrieved successfully"
-//  *                 response:
-//  *                   type: array
-//  *                   items:
-//  *                     type: object
-//  *                     properties:
-//  *                       id:
-//  *                         type: string
-//  *                         example: "doctorId123"
-//  *                       name:
-//  *                         type: string
-//  *                         example: "Dr. John Doe"
-//  *                       rating:
-//  *                         type: number
-//  *                         format: float
-//  *                         example: 4.5
-//  *                       lastName:
-//  *                         type: string
-//  *                         example: "Doe"
-//  *                       degree:
-//  *                         type: string
-//  *                         example: "Cardiology"
-//  *                       city:
-//  *                         type: string
-//  *                         example: "New York"
-//  *                       imageName:
-//  *                         type: string
-//  *                         nullable: true
-//  *                         example : "image.png"
-//  *
-//  *       '400':
-//  *         description : Invalid input data or validation error.
-//  *       '404':
-//  *         description : No doctors found matching the criteria.
-//  */
-
 /**
  * @swagger
  * tags:
@@ -165,11 +62,6 @@
  *                 type: string
  *                 description: The address of the doctor
  *                 example: "123 Main St, City, Country"
- *               role:
- *                 type: string
- *                 enum: ["doctor", "admin"]
- *                 description: The role of the user (default is doctor)
- *                 example: "doctor"
  *               degree:
  *                 type: string
  *                 enum: ["specialist", "super specialist"]
@@ -210,16 +102,69 @@
  *     responses:
  *       200:
  *         description: Doctor logged in successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                   description: The JWT token for the logged-in doctor
  *       401:
  *         description: Unauthorized, invalid credentials
+ */
+
+/**
+ * @swagger
+ * /api/doctors:
+ *   get:
+ *     summary: Retrieve a list of doctors based on filter criteria
+ *     description: This endpoint allows users to fetch doctors based on various filters such as sorting, specialization, and city.
+ *     tags: [Doctor]
+ *     parameters:
+ *       - in: query
+ *         name: sortBy
+ *         required: false
+ *         description: The sorting criterion for the doctors list.
+ *         schema:
+ *           type: string
+ *           enum: [oldest, newest, lowestRated, highestRated]
+ *           example: "newest"
+ *       - in: query
+ *         name: specializations
+ *         required: false
+ *         description: A comma-separated list of specializations to filter the doctors by.
+ *         schema:
+ *           type: string
+ *           example: "Dermatology,Cardiology"
+ *       - in: query
+ *         name: city
+ *         required: false
+ *         description: The name of the city where the doctors are located.
+ *         schema:
+ *           type: string
+ *           enum: [Tehran, Karaj, Shiraz]
+ *           example: "Tehran"
+ *       - in: query
+ *         name: page
+ *         required: true
+ *         description: The page number to retrieve (pagination).
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *           example: 1
+ *       - in: query
+ *         name: limit
+ *         required: true
+ *         description: The number of doctors to return per page (pagination).
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           example: 10
+ *       - in: query
+ *         name: name
+ *         required: false
+ *         description: Search term to filter doctors by name.
+ *         schema:
+ *           type: string
+ *           example: "John"
+ *     responses:
+ *       200:
+ *         description: A list of doctors that match the specified filters.
+ *       400:
+ *         description: Validation error for query parameters.
  */
 
 /**
@@ -232,153 +177,56 @@
  *     parameters:
  *       - name: doctorId
  *         in: path
- *         required: true
+ *         required: false
  *         description: ID of the doctor to retrieve
  *         schema:
- *           type: string
+ *           type: number
  *     responses:
  *       200:
  *         description: Doctor details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 doctorId:
- *                   type: string
- *                   description: The ID of the doctor
- *                 name:
- *                   type: string
- *                   description: The name of the doctor
- *                 email:
- *                   type: string
- *                   format: email
- *                   description: The email of the doctor
- *                 specializationId:
- *                   type: string
- *                   description: The specialization ID of the doctor
  *       404:
  *         description: Doctor not found
  */
 
 /**
  * @swagger
- * /api/doctors:
+ * /api/doctors/profile/{doctorId}:
  *   get:
- *     summary: Get a list of doctors
- *     description: This endpoint retrieves a list of doctors with optional pagination, sorting, filtering by specialization, filtering by city, and searching by name.
+ *     summary: Get doctor profile by doctor
+ *     description: This endpoint retrieves the details of a doctor by doctor or admin.
  *     tags: [Doctor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
- *       - name: page
- *         in: query
+ *       - name: doctorId
+ *         in: path
  *         required: false
- *         description: Page number for pagination (default is 1)
+ *         description: ID of the doctor to retrieve
  *         schema:
- *           type: integer
- *           default: 1
- *       - name: limit
- *         in: query
- *         required: false
- *         description: Number of doctors to retrieve per page (default is 10)
- *         schema:
- *           type: integer
- *           default: 10
- *       - name: sortBy
- *         in: query
- *         required: false
- *         description: |
- *           Sort the results by specific criteria.
- *           Options: oldest, newest, highestRated, lowestRated
- *         schema:
- *           type: string
- *           enum: [oldest, newest, highestRated, lowestRated]
- *       - name: specializationIds
- *         in: query
- *         required: false
- *         description: Filter doctors by specialization IDs (comma-separated)
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *       - name: cityId
- *         in: query
- *         required: false
- *         description: Filter doctors by city ID
- *         schema:
- *           type: string
- *       - name: doctorName
- *         in: query
- *         required: false
- *         description: Search term to filter doctors by name or last name
- *         schema:
- *           type: string
+ *           type: number
  *     responses:
  *       200:
- *         description: Doctors retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message indicating retrieval status
- *                 response:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                         description: The ID of the doctor
- *                       name:
- *                         type: string
- *                         description: The name of the doctor
- *                       lastName:
- *                         type: string
- *                         description: The last name of the doctor
- *                       degree:
- *                         type: string
- *                         description: The degree of the doctor
- *                       rating:
- *                         type: number
- *                         format: float
- *                         description: The rating of the doctor
- *                       city:
- *                         type: string
- *                         description: The city where the doctor practices
- *                       imageName:
- *                         type: string
- *                         description: The image name of the doctor
- *                       specializations:
- *                         type: array
- *                         items:
- *                           type: object
- *                           properties:
- *                             value:
- *                               type: string
- *                               description: The specialization value
- *                 totalPages:
- *                   type: integer
- *                   description: Total number of pages available
- *                 totalDoctors:
- *                   type: integer
- *                   description: Total number of doctors retrieved
- *       204:
- *         description: No doctors found matching the search criteria
- *       400:
- *         description: Validation error, e.g., invalid City ID
+ *         description: Doctor details retrieved successfully
+ *       404:
+ *         description: Doctor not found
  */
 
 /**
  * @swagger
- * /api/doctors/update:
+ * /api/doctors/update/{doctorId}:
  *   put:
  *     summary: Update doctor details
- *     description: This endpoint allows authenticated doctors to update their details. All fields are optional, so only the fields provided in the request body will be updated.
+ *     description: This endpoint allows admin & authenticated doctors to update their details. All fields are optional, so only the fields provided in the request body will be updated.
  *     tags: [Doctor]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - name: doctorId
+ *         in: path
+ *         required: false
+ *         description: ID of the doctor to update
+ *         schema:
+ *           type: number
  *     requestBody:
  *       required: true
  *       content:
@@ -422,15 +270,6 @@
  *     responses:
  *       200:
  *         description: Doctor details updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message
- *                   example: Doctor details updated successfully
  *       400:
  *         description: Validation error
  *       401:
@@ -455,10 +294,10 @@
 
 /**
  * @swagger
- * /api/doctors/remove:
+ * /api/doctors/remove/{doctorId}:
  *   delete:
  *     summary: Remove a doctor
- *     description: This endpoint allows authenticated users to remove their doctor profile.
+ *     description: This endpoint allows admin & authenticated users to remove their doctor profile.
  *     tags: [Doctor]
  *     security:
  *       - bearerAuth: []

@@ -12,7 +12,6 @@ import { ReadGetAllPatientsDto } from "./dto/read-getall-patients.dto";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
 import { Pagination } from "../../middlewares/pagination";
-import { log } from "console";
 import { Search } from "../../middlewares/search";
 
 export class PatientService {
@@ -111,7 +110,7 @@ export class PatientService {
     }
   }
 
-  async getMyProfile(patientId: number): Promise<ReadGetPatientDto> {
+  async getProfile(patientId: number): Promise<ReadGetPatientDto> {
     try {
       const patient = await this.patientRepo.findOne({
         where: { id: patientId },
@@ -265,6 +264,14 @@ export class PatientService {
     patientId: number
   ): Promise<{ message?: string; error?: string }> {
     try {
+      const patient = await this.patientRepo.findOne({
+        where: { id: patientId },
+      });
+
+      if (!patient) {
+        return { error: "Patient not found" };
+      }
+
       const refreshToken = await this.refreshTokenRepo.findOne({
         where: { patientId: patientId },
       });

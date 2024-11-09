@@ -54,15 +54,4 @@ export class UploadImageService {
       return { error: "Error saving image" };
     }
   }
-
-  async findCoverByFileName(
-    fileName: string
-  ): Promise<void | { error?: string }> {
-    const image = await this.imageRepo.findOne({
-      where: { imageName: fileName },
-    });
-    if (image) {
-      return { error: "this image is in use by doctor" };
-    }
-  }
 }

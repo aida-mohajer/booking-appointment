@@ -7,6 +7,8 @@ import { validateAdminLoginDto } from "./validations/admin-login-validation";
 import { validateAdminUpdateDto } from "./validations/admin-update.validation";
 import { AdminService } from "./admin.service";
 import { AdminController } from "./admin.controller";
+import { checkRole } from "../../middlewares/authorization";
+import { Role } from "../../enum/role.enum";
 
 export const adminRouter = express.Router();
 const adminService = new AdminService();
@@ -29,17 +31,18 @@ adminRouter.post(
 );
 
 adminRouter.get(
-  "/:adminId",
+  "/profile",
   authentication,
-  validateId,
+  checkRole([Role.Admin]),
   async (req: CustomRequest, res: Response) => {
-    await adminController.getAdmin(req, res);
+    await adminController.getAdminProfile(req, res);
   }
 );
 
 adminRouter.get(
   "",
   authentication,
+  checkRole([Role.Admin]),
   async (req: CustomRequest, res: Response) => {
     await adminController.getAdmins(req, res);
   }
@@ -48,6 +51,7 @@ adminRouter.get(
 adminRouter.put(
   "/update",
   authentication,
+  checkRole([Role.Admin]),
   validateAdminUpdateDto,
   async (req: CustomRequest, res: Response) => {
     await adminController.updateAdmin(req, res);
@@ -57,6 +61,7 @@ adminRouter.put(
 adminRouter.post(
   "/logout",
   authentication,
+  checkRole([Role.Admin]),
   async (req: CustomRequest, res: Response) => {
     await adminController.logoutAdmin(req, res);
   }
@@ -65,6 +70,7 @@ adminRouter.post(
 adminRouter.delete(
   "/remove",
   authentication,
+  checkRole([Role.Admin]),
   async (req: CustomRequest, res: Response) => {
     await adminController.removeAdmin(req, res);
   }

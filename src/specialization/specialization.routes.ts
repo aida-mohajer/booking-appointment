@@ -5,9 +5,9 @@ import { validateId } from "../id.validation";
 import { SpecializationService } from "./specialization.service";
 import { SpecializationController } from "./specialization.controller";
 import { validateAddSpecializationIdsToDrDto } from "./validations/add-specializationIds-dr.validation";
-import { isAdmin } from "../middlewares/isAdmin";
-import { isDoctor } from "../middlewares/isDoctor";
 import { validateCreateSpecializationDto } from "./validations/create-specialization.validations";
+import { checkRole } from "../middlewares/authorization";
+import { Role } from "../enum/role.enum";
 
 export const specializationRouter = express.Router();
 const specializationService = new SpecializationService();
@@ -18,7 +18,7 @@ const specializationController = new SpecializationController(
 specializationRouter.post(
   "/create",
   authentication,
-  isAdmin,
+  checkRole([Role.Admin]),
   validateCreateSpecializationDto,
   async (req: Request, res: Response) => {
     await specializationController.createSpecialization(req, res);
@@ -32,7 +32,7 @@ specializationRouter.get("", async (req: CustomRequest, res: Response) => {
 specializationRouter.delete(
   "/remove/:specializationId",
   authentication,
-  isAdmin,
+  checkRole([Role.Admin]),
   validateId,
   async (req: CustomRequest, res: Response) => {
     await specializationController.removeSpecialization(req, res);
@@ -40,19 +40,9 @@ specializationRouter.delete(
 );
 
 specializationRouter.post(
-  "/add-to-dr",
+  "/add-to-dr/:doctorId?",
   authentication,
-  isDoctor,
-  validateAddSpecializationIdsToDrDto,
-  async (req: CustomRequest, res: Response) => {
-    await specializationController.addSpecializationsToDr(req, res);
-  }
-);
-
-specializationRouter.post(
-  "/admin/add-to-dr/:doctorId",
-  authentication,
-  isAdmin,
+  checkRole([Role.Admin, Role.Doctor]),
   validateAddSpecializationIdsToDrDto,
   async (req: CustomRequest, res: Response) => {
     await specializationController.addSpecializationsToDr(req, res);
@@ -60,19 +50,9 @@ specializationRouter.post(
 );
 
 specializationRouter.delete(
-  "/remove-from-dr/specialization/:specializationId",
+  "/remove-from-dr/:doctorId?/specialization/:specializationId",
   authentication,
-  isDoctor,
-  validateId,
-  async (req: CustomRequest, res: Response) => {
-    await specializationController.removeDrSpecialization(req, res);
-  }
-);
-
-specializationRouter.delete(
-  "/admin/remove-from-dr/:doctorId/specialization/:specializationId",
-  authentication,
-  isAdmin,
+  checkRole([Role.Admin, Role.Doctor]),
   validateId,
   async (req: CustomRequest, res: Response) => {
     await specializationController.removeDrSpecialization(req, res);

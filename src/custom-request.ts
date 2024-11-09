@@ -1,26 +1,12 @@
 import { Request } from "express";
 import { Pagination } from "./middlewares/pagination";
 import { Search } from "./middlewares/search";
-
-// interface DateQueryParamsBase {
-//   year: number;
-//   day?: number;
-// }
-
-// interface DateQueryParamsWithMonth extends DateQueryParamsBase {
-//   month: number;
-// }
-
-// interface DateQueryParamsWithoutMonth extends DateQueryParamsBase {
-//   month?: number;
-// }
-
-// // You can then use these types in your requests
-// type DateQueryParams = DateQueryParamsWithMonth | DateQueryParamsWithoutMonth;
+import { Role } from "./enum/role.enum";
 
 export interface CustomRequest extends Request {
   user?: {
     id: number;
+    // role: Role;
     role: string;
   };
   pagination?: Pagination;
@@ -30,5 +16,4 @@ export interface CustomRequest extends Request {
     month?: number;
     day?: number;
   };
-  // dateQuery?: DateQueryParams;
 }

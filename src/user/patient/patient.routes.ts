@@ -6,13 +6,11 @@ import { validatePatientLoginDto } from "./validations/patient-login.validation"
 import { CustomRequest } from "../../custom-request";
 import { authentication } from "../../middlewares/authentication";
 import { validatePatientUpdateDto } from "./validations/patient-update.validation";
-import { validateId } from "../../id.validation";
-import { isAdmin } from "../../middlewares/isAdmin";
-import { isPatient } from "../../middlewares/isPatient";
-import { isDoctor } from "../../middlewares/isDoctor";
 import { pagination } from "../../middlewares/pagination";
 import { validateDateQueryparams } from "./validations/validate-date-query-params.validation";
 import { search } from "../../middlewares/search";
+import { checkRole } from "../../middlewares/authorization";
+import { Role } from "../../enum/role.enum";
 
 export const patientRouter = express.Router();
 const patientService = new PatientService();
@@ -27,16 +25,6 @@ patientRouter.post(
 );
 
 patientRouter.post(
-  "/admin/register",
-  authentication,
-  isAdmin,
-  validatePatientRegisterDto,
-  async (req: Request, res: Response) => {
-    await patientController.registerPatient(req, res);
-  }
-);
-
-patientRouter.post(
   "/login",
   validatePatientLoginDto,
   async (req: CustomRequest, res: Response) => {
@@ -44,20 +32,19 @@ patientRouter.post(
   }
 );
 
-patientRouter.post(
-  "/admin/login",
+patientRouter.get(
+  "/profile/:patientId?",
   authentication,
-  isAdmin,
-  validatePatientLoginDto,
+  checkRole([Role.Admin, Role.Patient]),
   async (req: CustomRequest, res: Response) => {
-    await patientController.loginPatient(req, res);
+    await patientController.getProfile(req, res);
   }
 );
 
 patientRouter.get(
-  "/with-appointments",
+  "/with-appointments/doctor/:doctorId?",
   authentication,
-  isDoctor,
+  checkRole([Role.Admin, Role.Doctor]),
   pagination,
   search,
   validateDateQueryparams,
@@ -66,53 +53,10 @@ patientRouter.get(
   }
 );
 
-patientRouter.get(
-  "/admin/with-appointments/doctor/:doctorId",
-  authentication,
-  isAdmin,
-  validateId,
-  pagination,
-  search,
-  validateDateQueryparams,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.getDrPatients(req, res);
-  }
-);
-
-patientRouter.get(
-  "",
-  authentication,
-  isPatient,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.getMyProfile(req, res);
-  }
-);
-
-patientRouter.get(
-  "/admin/:patientId",
-  authentication,
-  isAdmin,
-  validateId,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.getMyProfile(req, res);
-  }
-);
-
 patientRouter.put(
-  "/update",
+  "/update/:patientId?",
   authentication,
-  isPatient,
-  validatePatientUpdateDto,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.updatePatient(req, res);
-  }
-);
-
-patientRouter.put(
-  "/admin/update/:patientId",
-  authentication,
-  isAdmin,
-  validateId,
+  checkRole([Role.Admin, Role.Patient]),
   validatePatientUpdateDto,
   async (req: CustomRequest, res: Response) => {
     await patientController.updatePatient(req, res);
@@ -120,38 +64,18 @@ patientRouter.put(
 );
 
 patientRouter.post(
-  "/logout",
+  "/logout/:patientId?",
   authentication,
-  isPatient,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.logoutPatient(req, res);
-  }
-);
-
-patientRouter.post(
-  "/admin/logout/:patientId",
-  authentication,
-  isAdmin,
-  validateId,
+  checkRole([Role.Patient]),
   async (req: CustomRequest, res: Response) => {
     await patientController.logoutPatient(req, res);
   }
 );
 
 patientRouter.delete(
-  "/remove",
+  "/remove/:patientId?",
   authentication,
-  isPatient,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.removePatient(req, res);
-  }
-);
-
-patientRouter.delete(
-  "/admin/remove/:patientId",
-  authentication,
-  isAdmin,
-  validateId,
+  checkRole([Role.Admin, Role.Patient]),
   async (req: CustomRequest, res: Response) => {
     await patientController.removePatient(req, res);
   }

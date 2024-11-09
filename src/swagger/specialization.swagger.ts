@@ -17,20 +17,13 @@
 
 /**
  * @swagger
- * /api/specializations/add/{attrId}:
+ * /api/specializations/create:
  *   post:
- *     summary: Add a new specialization
- *     description: This endpoint allows authenticated users to add a new specialization associated with the specified attribute ID.
+ *     summary: create a new specialization
+ *     description: This endpoint allows authenticated users to create a new specialization.
  *     tags: [Specialization]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - name: attrId
- *         in: path
- *         required: true
- *         description: ID of the attribute to which the specialization will be added
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -43,7 +36,7 @@
  *                 description: The name of the specialization to add
  *     responses:
  *       201:
- *         description: Specialization added successfully
+ *         description: Specialization created successfully
  *       400:
  *         description: Validation error
  *       401:
@@ -52,36 +45,16 @@
 
 /**
  * @swagger
- * /api/specializations/{attrId}:
+ * /api/specializations:
  *   get:
- *     summary: Get specializations by attribute ID
- *     description: This endpoint retrieves specializations associated with the specified attribute ID.
+ *     summary: Get specializations
+ *     description: This endpoint retrieves specializations.
  *     tags: [Specialization]
- *     parameters:
- *       - name: attrId
- *         in: path
- *         required: true
- *         description: ID of the attribute to retrieve associated specializations
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: Specializations retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   specializationId:
- *                     type: string
- *                     description: The ID of the specialization
- *                   value:
- *                     type: string
- *                     description: The name of the specialization
  *       404:
- *         description: No specializations found for the specified attribute ID
+ *         description: No specializations found
  */
 
 /**
@@ -89,7 +62,7 @@
  * /api/specializations/remove/{specializationId}:
  *   delete:
  *     summary: Remove a specialization
- *     description: This endpoint allows authenticated users to remove a specialization by its ID.
+ *     description: This endpoint allows admins to remove a specialization by its ID.
  *     tags: [Specialization]
  *     security:
  *       - bearerAuth: []
@@ -99,7 +72,7 @@
  *         required: true
  *         description: ID of the specialization to remove
  *         schema:
- *           type: string
+ *           type: number
  *     responses:
  *       204:
  *         description: Specialization removed successfully
@@ -108,6 +81,7 @@
  *       404:
  *         description: Specialization not found
  */
+
 /**
  * @swagger
  * /api/specializations/add-to-dr/{doctorId}:
@@ -120,7 +94,7 @@
  *     parameters:
  *       - name: doctorId
  *         in: path
- *         required: true
+ *         required: false
  *         description: ID of the doctor to add specializations
  *         schema:
  *           type: number
@@ -152,14 +126,14 @@
  * /api/specializations/remove-from-dr/{doctorId}/specialization/{specializationId}:
  *   delete:
  *     summary: Remove a specialization from a doctor
- *     description: Allows authenticated users to remove a specialization from a specific doctor by doctor ID and specialization ID.
+ *     description: Allows admins & authenticated users to remove a specialization from a specific doctor by doctor ID and specialization ID.
  *     tags: [Specialization]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - name: doctorId
  *         in: path
- *         required: true
+ *         required: false
  *         description: ID of the doctor from whom to remove the specialization
  *         schema:
  *           type: number

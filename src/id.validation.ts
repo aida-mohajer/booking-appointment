@@ -1,42 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 
-// Utility function to validate an ID
-const isValidId = (id: string | undefined): id is string => {
+// in this middleware i validate ids except patientid,doctorid and adminid because sometimes
+//this ids would be optional
+const isValidId = (id: string | undefined) => {
   if (id === undefined) return false;
   const idNumber = Number(id);
   return !isNaN(idNumber) && Number.isInteger(idNumber) && idNumber > 0;
 };
 
 export const validateId = (req: Request, res: Response, next: NextFunction) => {
-  const {
-    patientId,
-    doctorId,
-    feedbackId,
-    availabilityId,
-    appointmentId,
-    adminId,
-  } = req.params;
-
-  if (patientId && !isValidId(patientId)) {
-    return res.status(400).json({
-      error:
-        "Invalid patient ID format. Please provide a valid positive integer.",
-    });
-  }
-
-  if (doctorId && !isValidId(doctorId)) {
-    return res.status(400).json({
-      error:
-        "Invalid doctor ID format. Please provide a valid positive integer.",
-    });
-  }
-
-  if (adminId && !isValidId(adminId)) {
-    return res.status(400).json({
-      error:
-        "Invalid admin ID format. Please provide a valid positive integer.",
-    });
-  }
+  const { feedbackId, availabilityId, appointmentId, cityId } = req.params;
 
   if (feedbackId && !isValidId(feedbackId)) {
     return res.status(400).json({
@@ -55,6 +28,12 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
     return res.status(400).json({
       error:
         "Invalid appointment ID format. Please provide a valid positive integer.",
+    });
+  }
+
+  if (cityId && !isValidId(cityId)) {
+    return res.status(400).json({
+      error: "Invalid city ID format. Please provide a valid positive integer.",
     });
   }
 

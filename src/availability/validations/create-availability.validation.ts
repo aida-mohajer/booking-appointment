@@ -7,6 +7,7 @@ export const validateCreateAvailabilityDto = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Transform request body into DTO
   const availabilityDto = Object.assign(new CreateAvailabilityDto(), req.body);
   const errors = await validate(availabilityDto);
 
@@ -19,6 +20,5 @@ export const validateCreateAvailabilityDto = async (
       })),
     });
   }
-
   next();
 };

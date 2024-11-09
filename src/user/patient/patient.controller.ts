@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PatientService } from "./patient.service";
 import { CustomRequest } from "../../custom-request";
+import { Role } from "../../enum/role.enum";
 // import { TokenBlacklistService } from "../../token-blacklist.service";
 
 // const tokenBlacklistService = new TokenBlacklistService();
@@ -35,14 +36,16 @@ export class PatientController {
     return res.status(200).json(result);
   }
 
-  async getMyProfile(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === "admin";
+  async getProfile(req: CustomRequest, res: Response): Promise<Response> {
+    const isAdmin = req.user?.role === Role.Admin;
     const patientId = isAdmin ? Number(req.params.patientId) : req.user?.id;
-
-    if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+    if (!patientId || isNaN(patientId)) {
+      return res
+        .status(400)
+        .json({ error: "Patient ID is required and must be valid" });
     }
-    const result = await this.patientService.getMyProfile(patientId);
+
+    const result = await this.patientService.getProfile(patientId);
     if (result.error) {
       return res.status(400).json({ error: result.error });
     }
@@ -50,19 +53,22 @@ export class PatientController {
   }
 
   async getDrPatients(req: CustomRequest, res: Response): Promise<Response> {
-    const search = req.search;
+    const isAdmin = req.user?.role === Role.Admin;
+    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
+    }
     const pagination = req.pagination;
     if (!pagination) {
       return res
         .status(400)
         .json({ error: "Pagination parameters are missing" });
     }
-    const isAdmin = req.user?.role === "admin";
-    const doctorId = isAdmin ? parseInt(req.params.doctorId) : req.user?.id;
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
-    }
+    const search = req.search;
     const { year, month, day } = req.dateQuery!;
+
     // Check date parameters in the order: year > month > day
     if (day) {
       if (month === undefined || year === undefined) {
@@ -98,10 +104,12 @@ export class PatientController {
   }
 
   async updatePatient(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === "admin";
+    const isAdmin = req.user?.role === Role.Admin;
     const patientId = isAdmin ? Number(req.params.patientId) : req.user?.id;
-    if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+    if (!patientId || isNaN(patientId)) {
+      return res
+        .status(400)
+        .json({ error: "Patient ID is required and must be valid" });
     }
     const data = req.body;
     const result = await this.patientService.updatePatient(patientId, data);
@@ -112,10 +120,9 @@ export class PatientController {
   }
 
   async logoutPatient(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === "admin";
-    const patientId = isAdmin ? Number(req.params.patientId) : req.user?.id;
+    const patientId = req.user?.id;
     if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+      return res.status(400).json({ error: "Patient ID is required" });
     }
     const result = await this.patientService.logoutPatient(patientId);
     if (result.error) {
@@ -125,10 +132,12 @@ export class PatientController {
   }
 
   async removePatient(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === "admin";
+    const isAdmin = req.user?.role === Role.Admin;
     const patientId = isAdmin ? Number(req.params.patientId) : req.user?.id;
-    if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+    if (!patientId || isNaN(patientId)) {
+      return res
+        .status(400)
+        .json({ error: "Patient ID is required and must be valid" });
     }
     const result = await this.patientService.removePatient(patientId);
     if (result.error) {

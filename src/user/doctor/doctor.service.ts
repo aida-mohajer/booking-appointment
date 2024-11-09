@@ -1,4 +1,4 @@
-import { EntityManager } from "typeorm";
+import { EntityManager, In } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { Encrypt } from "../../helper/encrypt";
 import { Doctor } from "../../entity/doctor.entity";
@@ -15,7 +15,6 @@ import { Pagination } from "../../middlewares/pagination";
 import { Search } from "../../middlewares/search";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
-import { City } from "../../entity/city.entity";
 // import { TokenBlacklistService } from "../../token-blacklist.service";
 
 // const tokenBlacklistService = new TokenBlacklistService();
@@ -24,8 +23,7 @@ export class DoctorService {
   constructor(
     private doctorRepo = AppDataSource.getRepository(Doctor),
     private imageRepo = AppDataSource.getRepository(Image),
-    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken),
-    private cityRepo = AppDataSource.getRepository(City)
+    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken)
   ) {}
   async registerDr(
     data: RegisterDrDto
@@ -137,15 +135,25 @@ export class DoctorService {
         .leftJoinAndSelect("doctor.city", "city")
         .leftJoinAndSelect("doctor.specializations", "specializations");
 
-      //filter specializations
+      //filter by specialization
       if (specializations && specializations.length > 0) {
-        doctorsQuery.andWhere(
-          "specializations.value IN (:...specializations)",
-          {
-            specializations,
-          }
-        );
+        doctorsQuery.andWhere((qb) => {
+          const subquery = qb
+            .subQuery()
+            .select("doc.id")
+            .from("doctor", "doc")
+            .innerJoin("doc.specializations", "spec")
+            .where("spec.value IN (:...specializations)", { specializations })
+            .groupBy("doc.id")
+            .having("COUNT(DISTINCT spec.id) = :count", {
+              count: specializations.length,
+            })
+            .getQuery();
+
+          return "doctor.id IN " + subquery;
+        });
       }
+
       // Add search filter
       if (name) {
         doctorsQuery.andWhere(
@@ -183,17 +191,16 @@ export class DoctorService {
           );
         }
       } else {
-        // Default sorting by rating if no sort option is specified
+        // Default sorting by rating
         doctorsQuery.orderBy("doctor.rating", "DESC");
       }
-
       const totalDoctors = await doctorsQuery.getCount();
 
       // Apply pagination
       const allDoctors = await doctorsQuery.skip(skip).take(limit).getMany();
+      console.log("SQL Query:", doctorsQuery.getSql());
       const totalPages = Math.ceil(totalDoctors / limit);
 
-      // Format the response
       const formattedDoctors = allDoctors.map((doctor) => ({
         id: doctor.id,
         name: doctor.name,
@@ -203,7 +210,7 @@ export class DoctorService {
         city: doctor.city ? doctor.city.value : "",
         imageName: doctor.image?.imageName || null,
         specializations:
-          doctor.specializations.map((spe) => ({ value: spe.value })) || [],
+          doctor.specializations?.map((spe) => ({ value: spe.value })) || [],
       }));
 
       return {
@@ -236,10 +243,10 @@ export class DoctorService {
           "doctor.address",
           "doctor.HIN",
           "doctor.bio",
-          "doctor.city",
           "doctor.rating",
+          "city.value",
           "image.imageName",
-          "doctor.specializations",
+          "specializations.value",
         ])
         .where("doctor.id = :doctorId", { doctorId })
         .getOne();
@@ -254,7 +261,7 @@ export class DoctorService {
     }
   }
 
-  async getMyProfile(doctorId: number): Promise<ReadGetDrDto> {
+  async getProfile(doctorId: number): Promise<ReadGetDrDto> {
     try {
       const doctor = await this.doctorRepo
         .createQueryBuilder("doctor")
@@ -319,6 +326,13 @@ export class DoctorService {
     doctorId: number
   ): Promise<{ message?: string; error?: string }> {
     try {
+      const doctor = await this.doctorRepo.findOne({
+        where: { id: doctorId },
+      });
+
+      if (!doctor) {
+        return { error: "Doctor not found" };
+      }
       const refreshToken = await this.refreshTokenRepo.findOne({
         where: { doctorId: doctorId },
       });

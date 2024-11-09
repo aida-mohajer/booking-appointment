@@ -19,8 +19,16 @@ export class AvailabilityService {
     try {
       const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
       if (!doctor) {
-        throw new Error("Doctor not found");
+        return { error: "Doctor not found" };
       }
+
+      // Check if the availability date is a future date and time
+      // const now = new Date();
+      // const availabilityDateTime = new Date(data.availableDate);
+
+      // if (availabilityDateTime < now) {
+      //   return { error: "Cannot create an availability for a past time." };
+      // }
 
       const existingAvailability = await this.availabilityRepo.findOne({
         where: { doctor, availableDate: data.availableDate },
@@ -49,11 +57,9 @@ export class AvailabilityService {
   async getAvailabilitiesByDr(
     doctorId: number,
     pagination: Pagination,
-    startDate?: Date,
-    endDate?: Date,
-    year?: number,
-    month?: number,
-    day?: number
+    startDate: Date,
+    endDate: Date,
+    isAvailable?: boolean
   ): Promise<ReadAvailabilitiesDto> {
     const { skip, limit } = pagination;
     try {
@@ -63,6 +69,11 @@ export class AvailabilityService {
       if (!doctor) {
         return { error: "Doctor not found" };
       }
+
+      // Set endDate to include the full day
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
+
       let queryBuilder = this.availabilityRepo
         .createQueryBuilder("availability")
         .select([
@@ -70,35 +81,19 @@ export class AvailabilityService {
           "availability.availableDate",
           "availability.isAvailable",
         ])
-        .where("availability.doctorId = :doctorId", { doctorId });
+        .where("availability.doctorId = :doctorId", { doctorId })
+        .andWhere("availability.availableDate >= :startDate", {
+          startDate,
+        })
+        .andWhere("availability.availableDate <= :adjustedEndDate", {
+          adjustedEndDate,
+        });
 
-      //filter by range
-      if (startDate && endDate) {
-        queryBuilder.andWhere(
-          "availability.availableDate BETWEEN :startDate AND :endDate",
-          {
-            startDate,
-            endDate,
-          }
-        );
-      }
-
-      //filter by date
-      if (year && month && day) {
-        const searchDate = `${year}-${String(month).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-        queryBuilder = queryBuilder.andWhere(
-          "CAST(availability.availableDate AS DATE) = :date",
-          { date: searchDate }
-        );
-      }
-      // Filter by entire month and year if only `year` and `month` are provided
-      else if (year && month) {
-        queryBuilder = queryBuilder.andWhere(
-          "YEAR(availability.availableDate) = :year AND MONTH(availability.availableDate) = :month",
-          { year, month }
-        );
+      //filter by isAvailable
+      if (isAvailable !== undefined) {
+        queryBuilder.andWhere("availability.isAvailable = :isAvailable", {
+          isAvailable,
+        });
       }
 
       const totalAvailability = await queryBuilder.getCount();
@@ -110,7 +105,6 @@ export class AvailabilityService {
         .take(limit)
         .getMany();
       const totalPages = Math.ceil(totalAvailability / limit);
-
       return {
         message:
           totalAvailability > 0
@@ -129,17 +123,21 @@ export class AvailabilityService {
   async getAvailabilitiesByPatient(
     doctorId: number,
     pagination: Pagination,
-    startDate?: Date,
-    endDate?: Date,
-    year?: number,
-    month?: number,
-    day?: number
+    startDate: Date,
+    endDate: Date
   ): Promise<ReadAvailabilitiesDto> {
     const { skip, limit } = pagination;
     try {
       //to prevent look or search for past dates
-      // const today = new Date();
-      // today.setHours(0, 0, 0, 0); // Set time to midnight to ensure accurate comparison
+      const now = new Date();
+
+      const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
+      if (!doctor) {
+        return { error: "Doctor not found" };
+      }
+
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setHours(23, 59, 59, 999);
 
       let queryBuilder = this.availabilityRepo
         .createQueryBuilder("availability")
@@ -149,39 +147,13 @@ export class AvailabilityService {
           "availability.isAvailable",
         ])
         .where("availability.doctorId = :doctorId", { doctorId })
-        // .andWhere("availability.availableDate >= :today", { today })
-        .andWhere("availability.isAvailable = :isAvailable", {
-          isAvailable: true,
+        .andWhere("availability.availableDate >= :startDate", {
+          startDate,
+        })
+        .andWhere("availability.availableDate <= :adjustedEndDate", {
+          adjustedEndDate,
         });
 
-      //filter by range
-      if (startDate && endDate) {
-        queryBuilder.andWhere(
-          "availability.availableDate BETWEEN :startDate AND :endDate",
-          {
-            startDate,
-            endDate,
-          }
-        );
-      }
-
-      //filter by date
-      if (year && month && day) {
-        const searchDate = `${year}-${String(month).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-        queryBuilder = queryBuilder.andWhere(
-          "CAST(availability.availableDate AS DATE) = :date",
-          { date: searchDate }
-        );
-      }
-      // Filter by entire month and year if only `year` and `month` are provided
-      else if (year && month) {
-        queryBuilder = queryBuilder.andWhere(
-          "YEAR(availability.availableDate) = :year AND MONTH(availability.availableDate) = :month",
-          { year, month }
-        );
-      }
       const totalAvailability = await queryBuilder.getCount();
 
       // Apply pagination
@@ -226,7 +198,7 @@ export class AvailabilityService {
           const availability = await transactionalEntityManager.findOne(
             Availability,
             {
-              where: { id: availabilityId },
+              where: { id: availabilityId, doctorId: doctorId },
             }
           );
           if (!availability) {

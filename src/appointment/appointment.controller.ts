@@ -4,29 +4,18 @@ import { AppointmentService } from "./appointment.service";
 
 export class AppointmentController {
   constructor(private appointmentService: AppointmentService) {}
-  private isValidDate(year: number, month: number, day: number): boolean {
-    const date = new Date(year, month - 1, day); // JavaScript months are zero-indexed (January is 0, December is 11)
-    return (
-      date.getFullYear() === year &&
-      date.getMonth() === month - 1 &&
-      date.getDate() === day
-    );
-  }
 
   async createAppointment(
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
     const availabilityId = Number(req.params.availabilityId);
-    const doctorId = Number(req.params.doctorId);
-    const isAdmin = req.user?.role === "admin";
-    const patientId = isAdmin ? Number(req.query.patientId) : req.user?.id;
+    const patientId = req.user?.id;
     if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+      return res.status(400).json({ error: "Patient ID is required" });
     }
     const result = await this.appointmentService.createAppointment(
       patientId,
-      doctorId,
       availabilityId
     );
     if (result.error) {
@@ -46,77 +35,36 @@ export class AppointmentController {
         .json({ error: "Pagination parameters are missing" });
     }
     const search = req.search;
-    const isAdmin = req.user?.role === "admin";
-    const doctorId = isAdmin ? Number(req.query.doctorId) : req.user?.id;
+    const doctorId = req.user?.id;
     if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
-    }
-    const isAvailable =
-      req.query.isAvailable === "true"
-        ? true
-        : req.query.isAvailable === "false"
-        ? false
-        : undefined;
-
-    const range = req.query.range;
-    const { year, month, day } = req.dateQuery!;
-
-    let startDate, endDate;
-    if (range) {
-      switch (range) {
-        case "today":
-          startDate = new Date();
-          endDate = new Date();
-          break;
-        case "thisWeek":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setDate(startDate.getDate() + 7);
-          break;
-        case "thisMonth":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setMonth(startDate.getMonth() + 1);
-          break;
-        default:
-          return res.status(400).json({ error: "Invalid range parameter" });
-      }
+      return res.status(401).json({ error: "Doctor ID is required" });
     }
 
-    // Check date parameters in the order: year > month > day
-    if (day) {
-      if (month === undefined || year === undefined) {
-        return res.status(400).json({
-          error:
-            "If day is provided, both year and month must also be specified.",
-        });
-      }
-      if (!this.isValidDate(year, month, day)) {
-        return res.status(400).json({
-          error: "Invalid date provided for the specified month and year",
-        });
-      }
-    } else if (month) {
-      if (year === undefined) {
-        return res.status(400).json({
-          error: "If month is provided, year must also be specified.",
-        });
-      }
-    } else if (year) {
+    // Ensure startDate and endDate are defined and valid Date objects
+    const startDate = req.query.startDate
+      ? new Date(req.query.startDate as string)
+      : null;
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
+      : null;
+
+    if (
+      !startDate ||
+      !endDate ||
+      isNaN(startDate.getTime()) ||
+      isNaN(endDate.getTime())
+    ) {
       return res.status(400).json({
-        error: "Month must be specified",
+        error: "startDate and endDate are required and must be valid dates",
       });
     }
+
     const result = await this.appointmentService.getAppointmentsByDr(
       doctorId,
       pagination,
-      isAvailable,
-      search,
       startDate,
       endDate,
-      year,
-      month,
-      day
+      search
     );
     if (result.error) {
       return res.status(400).json({ error: result.error });
@@ -128,16 +76,22 @@ export class AppointmentController {
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
-    const doctorId = Number(req.params.doctorId);
-
-    const isAdmin = req.user?.role === "admin";
-    const patientId = isAdmin ? Number(req.query.patientId) : req.user?.id;
+    const patientId = req.user?.id;
     if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+      return res.status(401).json({ error: "patient ID is required" });
     }
 
+    const startDate = req.query.startDate
+      ? new Date(req.query.startDate as string)
+      : undefined;
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
+      : undefined;
+
     const result = await this.appointmentService.getAppointmentsByPatient(
-      doctorId
+      patientId,
+      startDate,
+      endDate
     );
     if (result.error) {
       return res.status(400).json({ error: result.error });
@@ -152,7 +106,7 @@ export class AppointmentController {
     const appointmentId = Number(req.params.appointmentId);
     const patientId = req.user?.id;
     if (!patientId) {
-      return res.status(401).json({ error: "No id" });
+      return res.status(401).json({ error: "patient ID is required" });
     }
     const result = await this.appointmentService.cancelAppointment(
       appointmentId,

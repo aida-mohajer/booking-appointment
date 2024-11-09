@@ -3,6 +3,7 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import { CustomRequest } from "../custom-request";
 import { TokenBlacklistService } from "../token-blacklist.service";
+import { Role } from "../enum/role.enum";
 
 dotenv.config();
 

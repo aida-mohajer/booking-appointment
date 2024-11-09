@@ -17,20 +17,13 @@
 
 /**
  * @swagger
- * /api/cities/add/{attrId}:
+ * /api/cities/create:
  *   post:
- *     summary: Add a new city
- *     description: This endpoint allows authenticated users to add a new city associated with the specified ID.
+ *     summary: create a new city
+ *     description: This endpoint allows admins to create a new city.
  *     tags: [City]
  *     security:
  *       - bearerAuth: []  # Assuming you are using Bearer token for authentication
- *     parameters:
- *       - name: attrId
- *         in: path
- *         required: true
- *         description: AttrId associated with the city to be added
- *         schema:
- *           type: number
  *     requestBody:
  *       required: true
  *       content:
@@ -40,10 +33,10 @@
  *             properties:
  *               value:
  *                 type: string
- *                 description: The name of the city to add
+ *                 description: The name of the city to create
  *     responses:
  *       201:
- *         description: City added successfully
+ *         description: City created successfully
  *       400:
  *         description: Validation error
  *       401:
@@ -52,42 +45,16 @@
 
 /**
  * @swagger
- * /api/cities/{attrId}:
+ * /api/cities:
  *   get:
- *     summary: Get cities by attrId
- *     description: This endpoint retrieves the cities associated with the specified attrId.
+ *     summary: Get cities
+ *     description: This endpoint retrieves the cities.
  *     tags: [City]
- *     parameters:
- *       - name: attrId
- *         in: path
- *         required: true
- *         description: attrId to retrieve the associated cities
- *         schema:
- *           type: number
  *     responses:
  *       200:
  *         description: Cities retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 cities:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       cityId:
- *                         type: string
- *                         description: The ID of the city
- *                       cityName:
- *                         type: string
- *                         description: The name of the city
- *                       additionalInfo:
- *                         type: object
- *                         description: Any additional information related to the city
  *       404:
- *         description: Cities not found for the specified ID
+ *         description: Cities not found
  */
 
 /**
@@ -95,7 +62,7 @@
  * /api/cities/remove/{cityId}:
  *   delete:
  *     summary: Remove a city
- *     description: This endpoint allows authenticated users to remove a city by its ID.
+ *     description: This endpoint admins to remove a city by its ID.
  *     tags: [City]
  *     security:
  *       - bearerAuth: []  # Assuming you are using Bearer token for authentication

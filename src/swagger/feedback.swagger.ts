@@ -30,7 +30,7 @@
  *         required: true
  *         description: ID of the doctor for whom the feedback is being created
  *         schema:
- *           type: string
+ *           type: number
  *     requestBody:
  *       required: true
  *       content:
@@ -66,26 +66,10 @@
  *         required: true
  *         description: ID of the doctor to retrieve feedbacks for
  *         schema:
- *           type: string
+ *           type: number
  *     responses:
  *       200:
  *         description: Feedbacks retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   feedbackId:
- *                     type: string
- *                     description: ID of the feedback
- *                   rating:
- *                     type: integer
- *                     description: Rating given to the doctor (1-5 scale)
- *                   comment:
- *                     type: string
- *                     description: Feedback comment
  *       404:
  *         description: Doctor not found
  */
@@ -105,7 +89,7 @@
  *         required: true
  *         description: ID of the feedback to update
  *         schema:
- *           type: string
+ *           type: number
  *     requestBody:
  *       required: true
  *       content:

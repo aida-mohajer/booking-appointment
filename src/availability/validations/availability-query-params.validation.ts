@@ -2,25 +2,16 @@ import { Request, Response, NextFunction } from "express";
 import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { CustomRequest } from "../../custom-request";
-import { QueryAppointmentParamsDto } from "../dto/quey-appointment-params.dto";
+import { AvailabilityQueryParamsDto } from "../dto/availability-query-params.dto";
 
-export const validateQueryAppointmentparams = (
+export const validateAvailabilityQueryparams = (
   req: CustomRequest,
   res: Response,
   next: NextFunction
 ) => {
-  const { year, month, day } = req.query;
+  const { isAvailable } = req.query;
 
-  // Check for unexpected query parameters
-  const validParams = [
-    "year",
-    "month",
-    "day",
-    "limit",
-    "page",
-    "range",
-    "isAvailable",
-  ];
+  const validParams = ["limit", "page", "isAvailable", "startDate", "endDate"];
   const invalidParams = Object.keys(req.query).filter(
     (param) => !validParams.includes(param)
   );
@@ -31,15 +22,11 @@ export const validateQueryAppointmentparams = (
     });
   }
 
-  const parsedYear = year ? parseInt(year as string) : undefined;
-  const parsedMonth = month ? parseInt(month as string) : undefined;
-  const parsedDay = day ? parseInt(day as string) : undefined;
+  const parsedIsAvailable = isAvailable ? isAvailable === "true" : undefined;
 
-  const dto = plainToClass(QueryAppointmentParamsDto, {
+  const dto = plainToClass(AvailabilityQueryParamsDto, {
     ...req.query,
-    year: parsedYear,
-    month: parsedMonth,
-    day: parsedDay,
+    isAvailable: parsedIsAvailable,
   });
 
   validate(dto).then((errors) => {
@@ -51,7 +38,6 @@ export const validateQueryAppointmentparams = (
       return res.status(400).json({ errors: formattedErrors });
     }
 
-    req.dateQuery = { year: dto.year, month: dto.month, day: dto.day };
     next();
   });
 };

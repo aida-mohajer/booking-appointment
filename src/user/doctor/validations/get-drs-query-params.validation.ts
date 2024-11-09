@@ -27,11 +27,14 @@ export const validateGetDrsQuertParamsDto = async (
       error: `Invalid query parameter(s): ${invalidParams.join(", ")}`,
     });
   }
+  // const specializations = req.query.specializations
+  //   ? typeof req.query.specializations === "string"
+  //     ? (req.query.specializations as string).split(",")
+  //     : req.query.specializations
+  //   : undefined;
   const specializations = req.query.specializations
-    ? typeof req.query.specializations === "string"
-      ? (req.query.specializations as string).split(",")
-      : req.query.specializations
-    : undefined;
+    ? (req.query.specializations as string).split(",")
+    : [];
 
   const queryParamsDto = plainToClass(GetDrsQueryParamsDto, {
     ...req.query,

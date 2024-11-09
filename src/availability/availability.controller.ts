@@ -1,28 +1,22 @@
 import { Response } from "express";
 import { AvailabilityService } from "./availability.service";
 import { CustomRequest } from "../custom-request";
+import { Role } from "../enum/role.enum";
 
 export class AvailabilityController {
   constructor(private availabilityService: AvailabilityService) {}
-
-  private isValidDate(year: number, month: number, day: number): boolean {
-    const date = new Date(year, month - 1, day); // JavaScript months are zero-indexed (January is 0, December is 11)
-    return (
-      date.getFullYear() === year &&
-      date.getMonth() === month - 1 &&
-      date.getDate() === day
-    );
-  }
 
   async createAvailability(
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
     const data = req.body;
-    const isAdmin = req.user?.role === "admin";
-    const doctorId = isAdmin ? Number(req.query.doctorId) : req.user?.id;
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
+    const isAdmin = req.user?.role === Role.Admin;
+    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
     }
     const result = await this.availabilityService.createAvailability(
       doctorId,
@@ -38,64 +32,44 @@ export class AvailabilityController {
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
-    const isAdmin = req.user?.role === "admin";
-    const doctorId = isAdmin ? Number(req.query.doctorId) : req.user?.id;
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
+    const isAdmin = req.user?.role === Role.Admin;
+    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
     }
+
     const pagination = req.pagination;
     if (!pagination) {
       return res
         .status(400)
         .json({ error: "Pagination parameters are missing" });
     }
-    const range = req.query.range as string;
-    const { year, month, day } = req.dateQuery!;
 
-    let startDate, endDate;
-    if (range) {
-      switch (range) {
-        case "today":
-          startDate = new Date();
-          endDate = new Date();
-          break;
-        case "thisWeek":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setDate(startDate.getDate() + 7);
-          break;
-        case "thisMonth":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setMonth(startDate.getMonth() + 1);
-          break;
-        default:
-          return res.status(400).json({ error: "Invalid range parameter" });
-      }
-    }
+    const isAvailable =
+      req.query.isAvailable === "true"
+        ? true
+        : req.query.isAvailable === "false"
+        ? false
+        : undefined;
 
-    // Check date parameters in the order: year > month > day
-    if (day) {
-      if (month === undefined || year === undefined) {
-        return res.status(400).json({
-          error:
-            "If day is provided, both year and month must also be specified.",
-        });
-      }
-      if (!this.isValidDate(year, month, day)) {
-        return res.status(400).json({
-          error: "Invalid date provided for the specified month and year",
-        });
-      }
-    } else if (month) {
-      if (year === undefined) {
-        return res.status(400).json({
-          error: "If month is provided, year must also be specified.",
-        });
-      }
-    } else if (year) {
+    // Ensure startDate and endDate are defined and valid Date objects
+    const startDate = req.query.startDate
+      ? new Date(req.query.startDate as string)
+      : null;
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
+      : null;
+
+    if (
+      !startDate ||
+      !endDate ||
+      isNaN(startDate.getTime()) ||
+      isNaN(endDate.getTime())
+    ) {
       return res.status(400).json({
-        error: "Month must be specified",
+        error: "startDate and endDate are required and must be valid dates",
       });
     }
 
@@ -104,9 +78,7 @@ export class AvailabilityController {
       pagination,
       startDate,
       endDate,
-      year,
-      month,
-      day
+      isAvailable
     );
 
     if (result.error) {
@@ -119,60 +91,36 @@ export class AvailabilityController {
     req: CustomRequest,
     res: Response
   ): Promise<Response> {
-    const doctorId = parseInt(req.params.doctorId);
+    const doctorId = Number(req.params.doctorId);
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
+    }
+
     const pagination = req.pagination;
     if (!pagination) {
       return res
         .status(400)
         .json({ error: "Pagination parameters are missing" });
     }
-    const range = req.query.range as string;
-    const { year, month, day } = req.dateQuery!;
 
-    let startDate, endDate;
-    if (range) {
-      switch (range) {
-        case "today":
-          startDate = new Date();
-          endDate = new Date();
-          break;
-        case "thisWeek":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setDate(startDate.getDate() + 7);
-          break;
-        case "thisMonth":
-          startDate = new Date();
-          endDate = new Date();
-          endDate.setMonth(startDate.getMonth() + 1);
-          break;
-        default:
-          return res.status(400).json({ error: "Invalid range parameter" });
-      }
-    }
+    // Ensure startDate and endDate are defined and valid Date objects
+    const startDate = req.query.startDate
+      ? new Date(req.query.startDate as string)
+      : null;
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate as string)
+      : null;
 
-    // Check date parameters in the order: year > month > day
-    if (day) {
-      if (month === undefined || year === undefined) {
-        return res.status(400).json({
-          error:
-            "If day is provided, both year and month must also be specified.",
-        });
-      }
-      if (!this.isValidDate(year, month, day)) {
-        return res.status(400).json({
-          error: "Invalid date provided for the specified month and year",
-        });
-      }
-    } else if (month) {
-      if (year === undefined) {
-        return res.status(400).json({
-          error: "If month is provided, year must also be specified.",
-        });
-      }
-    } else if (year) {
+    if (
+      !startDate ||
+      !endDate ||
+      isNaN(startDate.getTime()) ||
+      isNaN(endDate.getTime())
+    ) {
       return res.status(400).json({
-        error: "Month must be specified",
+        error: "startDate and endDate are required and must be valid dates",
       });
     }
 
@@ -180,10 +128,7 @@ export class AvailabilityController {
       doctorId,
       pagination,
       startDate,
-      endDate,
-      year,
-      month,
-      day
+      endDate
     );
 
     if (result.error) {
@@ -197,12 +142,13 @@ export class AvailabilityController {
     res: Response
   ): Promise<Response> {
     const availabilityId = Number(req.params.availabilityId);
-    const isAdmin = req.user?.role === "admin";
-    const doctorId = isAdmin ? Number(req.query.doctorId) : req.user?.id;
-    if (!doctorId) {
-      return res.status(401).json({ error: "No id" });
+    const isAdmin = req.user?.role === Role.Admin;
+    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
+    if (!doctorId || isNaN(doctorId)) {
+      return res
+        .status(400)
+        .json({ error: "Doctor ID is required and must be valid" });
     }
-
     const result = await this.availabilityService.removeAvailability(
       availabilityId,
       doctorId

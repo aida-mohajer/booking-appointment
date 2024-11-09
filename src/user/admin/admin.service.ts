@@ -102,7 +102,7 @@ export class AdminService {
     }
   }
 
-  async getAdmin(adminId: number): Promise<ReadGetAdminDto> {
+  async getAdminProfile(adminId: number): Promise<ReadGetAdminDto> {
     try {
       const admin = await this.adminRepo.findOne({
         where: { id: adminId },
@@ -171,6 +171,13 @@ export class AdminService {
     adminId: number
   ): Promise<{ message?: string; error?: string }> {
     try {
+      const admin = await this.adminRepo.findOne({
+        where: { id: adminId },
+      });
+
+      if (!admin) {
+        return { error: "Admin not found" };
+      }
       const refreshToken = await this.refreshTokenRepo.findOne({
         where: { adminId: adminId },
       });

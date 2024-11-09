@@ -24,7 +24,6 @@ export class CityController {
 
   async removeCity(req: CustomRequest, res: Response): Promise<Response> {
     const cityId = Number(req.params.cityId);
-
     const result = await this.cityService.removeCity(cityId);
     if (result.error) {
       return res.status(400).json({ error: result.error });

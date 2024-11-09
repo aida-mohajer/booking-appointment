@@ -27,10 +27,10 @@
  *     parameters:
  *       - name: doctorId
  *         in: path
- *         required: true
+ *         required: false
  *         description: ID of the doctor for whom the image is being uploaded
  *         schema:
- *           type: string
+ *           type: number
  *     requestBody:
  *       required: true
  *       content:
@@ -45,17 +45,6 @@
  *     responses:
  *       201:
  *         description: Image uploaded successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   description: Success message
- *                 imageUrl:
- *                   type: string
- *                   description: URL of the uploaded image
  *       400:
  *         description: Validation error
  *       401:
