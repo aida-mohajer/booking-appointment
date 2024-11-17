@@ -1,7 +1,6 @@
 import { Response } from "express";
 import { FeedbackService } from "./feedback.service";
 import { CustomRequest } from "../custom-request";
-import { Role } from "../enum/role.enum";
 
 export class FeebackController {
   constructor(private feedbackService: FeedbackService) {}

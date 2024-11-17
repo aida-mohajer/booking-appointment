@@ -6,6 +6,7 @@ export class ReadGetAllDrsDto {
     rating: number;
     degree: string;
     city: string;
+    hospitals?: { id: string; name: string }[];
     specializations: { value: string }[];
     imageName: string | null;
   }[];

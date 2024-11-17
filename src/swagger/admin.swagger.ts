@@ -41,7 +41,7 @@
  *                 type: string
  *                 format: email
  *                 description: The email of the doctor
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               password:
  *                 type: string
  *                 description: The password for the doctor
@@ -55,7 +55,7 @@
 
 /**
  * @swagger
- * /api/admin/login:
+ * /api/admins/login:
  *   post:
  *     summary: Login a admin
  *     description: This endpoint allows an admin to log in and receive a token.
@@ -70,6 +70,7 @@
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: john.doe@gmail.com
  *                 description: The email of the admin
  *               password:
  *                 type: string
@@ -99,7 +100,7 @@
 
 /**
  * @swagger
- * /api/doctors/profile:
+ * /api/admins/profile:
  *   get:
  *     summary: Get admin profile by it's owner
  *     description: This endpoint retrieves the details of an admin by it's owner.
@@ -141,7 +142,7 @@
  *                 type: string
  *                 format: email
  *                 description: The updated email of the admin
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               password:
  *                 type: string
  *                 description: The updated password for the admin's account

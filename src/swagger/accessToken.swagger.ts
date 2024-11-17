@@ -37,14 +37,6 @@
  *     responses:
  *       201:
  *         description: Access token created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *                   description: Newly generated access token
  *       400:
  *         description: Validation error, invalid refresh token format or missing required fields
  *       401:

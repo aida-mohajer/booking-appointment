@@ -17,34 +17,56 @@
 
 /**
  * @swagger
- * /api/appointments/create/availability/{availabilityId}:
+ * /api/appointments/create/doctor/{doctorId}/hospital/{hospitalId}:
  *   post:
  *     summary: Create a new appointment
- *     description: This endpoint allows authenticated patients to create a new appointment for a specific doctor and availability.
+ *     description: This endpoint allows patients to create a new appointment with a specific doctor at a specified hospital.
  *     tags: [Appointment]
  *     security:
  *       - bearerAuth: []  # Assuming you are using Bearer token for authentication
  *     parameters:
- *       - name: availabilityId
+ *       - name: doctorId
  *         in: path
  *         required: true
- *         description: ID of the availability slot for the appointment
+ *         description: ID of the doctor for whom the appointment is being created
  *         schema:
- *           type: number
+ *           type: integer
+ *       - name: hospitalId
+ *         in: path
+ *         required: true
+ *         description: ID of the hospital where the appointment will take place
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               appointmentDate:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of the appointment in ISO 8601 format
+ *                 example: "2024-11-20"
+ *               time:
+ *                 type: string
+ *                 description: The time of the appointment in HH:mm format
+ *                 example: "14:30"
  *     responses:
  *       201:
  *         description: Appointment created successfully
  *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized, user not authenticated
+ *         description: Bad Request - Validation errors or missing Patient ID
  *       404:
- *         description: Doctor or availability not found
+ *         description: Not Found - The specified doctor or hospital does not exist
+ *       500:
+ *         description: Internal Server Error - An error occurred while creating the appointment
  */
 
 /**
  * @swagger
- * /api/appointments/by-dr:
+ * /api/appointments/by-dr/hospital/{hospitalId}:
  *   get:
  *     summary: Retrieve appointments by doctor
  *     description: Retrieve a list of appointments for the authenticated doctor within a specified date range. Allows filtering by availability and supports pagination and search.
@@ -52,12 +74,17 @@
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - name: hospitalId
+ *         in: path
+ *         required: true
+ *         description: ID of the hospital to retrieve
+ *         schema:
+ *           type: number
  *       - in: query
  *         name: startDate
  *         required: true
  *         schema:
  *           type: string
- *           format: date
  *           example: "2024-12-01"
  *         description: Start date for filtering appointments (inclusive).
  *       - in: query
@@ -65,7 +92,6 @@
  *         required: true
  *         schema:
  *           type: string
- *           format: date
  *           example: "2024-12-31"
  *         description: End date for filtering appointments (inclusive).
  *       - in: query

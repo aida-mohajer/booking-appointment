@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { CustomRequest } from "../../custom-request";
-// import { TokenBlacklistService } from "../../token-blacklist.service";
 import { DoctorService } from "./doctor.service";
 import { Role } from "../../enum/role.enum";
+// import { TokenBlacklistService } from "../../token-blacklist.service";
 
 export class DoctorController {
   constructor(private drService: DoctorService) {}
@@ -37,12 +37,14 @@ export class DoctorController {
     const search = req.search;
     const sortBy = req.query.sortBy as string;
     const city = req.query.city as string;
+    const hospital = req.query.hospital as string;
 
     const result = await this.drService.getDrs(
       pagination,
       search,
       sortBy,
       city,
+      hospital,
       specializations
     );
     if (result.error) {
@@ -66,12 +68,9 @@ export class DoctorController {
   }
 
   async getProfile(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === Role.Admin;
-    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
-    if (!doctorId || isNaN(doctorId)) {
-      return res
-        .status(400)
-        .json({ error: "Doctor ID is required and must be valid" });
+    const doctorId = req.user?.id;
+    if (!doctorId) {
+      return res.status(400).json({ error: "Doctor ID is required" });
     }
     const result = await this.drService.getProfile(doctorId);
     if (result.error) {
@@ -81,12 +80,9 @@ export class DoctorController {
   }
 
   async updateDr(req: CustomRequest, res: Response): Promise<Response> {
-    const isAdmin = req.user?.role === Role.Admin;
-    const doctorId = isAdmin ? Number(req.params.doctorId) : req.user?.id;
-    if (!doctorId || isNaN(doctorId)) {
-      return res
-        .status(400)
-        .json({ error: "Doctor ID is required and must be valid" });
+    const doctorId = req.user?.id;
+    if (!doctorId) {
+      return res.status(400).json({ error: "Doctor ID is required" });
     }
     const data = req.body;
     const result = await this.drService.updateDr(doctorId, data);

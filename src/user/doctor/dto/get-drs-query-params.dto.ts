@@ -1,4 +1,4 @@
-import { IsArray, IsIn, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsIn, IsOptional, IsString } from "class-validator";
 
 export class GetDrsQueryParamsDto {
   @IsOptional()
@@ -15,6 +15,10 @@ export class GetDrsQueryParamsDto {
   specializations?: string[];
 
   @IsOptional()
-  @IsNumber()
-  cityId?: number;
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  hospital?: string;
 }

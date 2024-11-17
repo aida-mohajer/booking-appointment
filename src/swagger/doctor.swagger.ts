@@ -41,12 +41,12 @@
  *                 type: string
  *                 format: email
  *                 description: The email of the doctor
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               password:
  *                 type: string
  *                 description: The password for the doctor
  *                 example: securepassword123
- *               contact_number:
+ *               contactNumber:
  *                 type: string
  *                 description: The contact number of the doctor
  *                 example: "+1234567890"
@@ -67,7 +67,7 @@
  *                 enum: ["specialist", "super specialist"]
  *                 description: The degree of the doctor
  *                 example: "specialist"
- *               city:
+ *               cityId:
  *                 type: integer
  *                 description: The city ID where the doctor practices
  *                 example: 1
@@ -95,6 +95,7 @@
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: john.doe@gmail.com
  *                 description: The email of the doctor
  *               password:
  *                 type: string
@@ -111,7 +112,7 @@
  * /api/doctors:
  *   get:
  *     summary: Retrieve a list of doctors based on filter criteria
- *     description: This endpoint allows users to fetch doctors based on various filters such as sorting, specialization, and city.
+ *     description: This endpoint allows users to fetch doctors based on various filters such as sorting, specialization, hospital and city.
  *     tags: [Doctor]
  *     parameters:
  *       - in: query
@@ -137,6 +138,13 @@
  *           type: string
  *           enum: [Tehran, Karaj, Shiraz]
  *           example: "Tehran"
+ *       - in: query
+ *         name: hospital
+ *         required: false
+ *         description: The name of the hospital where the doctors are located.
+ *         schema:
+ *           type: string
+ *           enum: [Mehr hospital, Sasan hospital , Milad hospital , Nikan hospital , Maryam hospital]
  *       - in: query
  *         name: page
  *         required: true
@@ -169,7 +177,7 @@
 
 /**
  * @swagger
- * /api/doctors/{doctorId}:
+ * /api/doctors/get-dr/{doctorId}:
  *   get:
  *     summary: Get doctor details by ID
  *     description: This endpoint retrieves the details of a doctor associated with the specified ID.
@@ -190,20 +198,13 @@
 
 /**
  * @swagger
- * /api/doctors/profile/{doctorId}:
+ * /api/doctors/profile:
  *   get:
  *     summary: Get doctor profile by doctor
- *     description: This endpoint retrieves the details of a doctor by doctor or admin.
+ *     description: This endpoint retrieves the details of a doctor by doctor.
  *     tags: [Doctor]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - name: doctorId
- *         in: path
- *         required: false
- *         description: ID of the doctor to retrieve
- *         schema:
- *           type: number
  *     responses:
  *       200:
  *         description: Doctor details retrieved successfully
@@ -213,20 +214,13 @@
 
 /**
  * @swagger
- * /api/doctors/update/{doctorId}:
+ * /api/doctors/update:
  *   put:
  *     summary: Update doctor details
- *     description: This endpoint allows admin & authenticated doctors to update their details. All fields are optional, so only the fields provided in the request body will be updated.
+ *     description: This endpoint allows authenticated doctors to update their details. All fields are optional, so only the fields provided in the request body will be updated.
  *     tags: [Doctor]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - name: doctorId
- *         in: path
- *         required: false
- *         description: ID of the doctor to update
- *         schema:
- *           type: number
  *     requestBody:
  *       required: true
  *       content:
@@ -246,7 +240,7 @@
  *                 type: string
  *                 format: email
  *                 description: The updated email of the doctor
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               address:
  *                 type: string
  *                 description: The updated address of the doctor
@@ -255,7 +249,7 @@
  *                 type: string
  *                 description: The updated password for the doctor's account
  *                 example: newpassword123
- *               contact_number:
+ *               contactNumber:
  *                 type: string
  *                 description: The updated contact number of the doctor
  *                 example: +1234567890
@@ -263,7 +257,7 @@
  *                 type: string
  *                 description: The updated biography or professional summary of the doctor
  *                 example: Dr. John Doe is a specialist in cardiology with over 10 years of experience.
- *               city:
+ *               cityId:
  *                 type: number
  *                 description: The ID of the updated city where the doctor practices
  *                 example: 1

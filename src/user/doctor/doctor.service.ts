@@ -1,4 +1,4 @@
-import { EntityManager, In } from "typeorm";
+import { EntityManager } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { Encrypt } from "../../helper/encrypt";
 import { Doctor } from "../../entity/doctor.entity";
@@ -16,7 +16,6 @@ import { Search } from "../../middlewares/search";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
 // import { TokenBlacklistService } from "../../token-blacklist.service";
-
 // const tokenBlacklistService = new TokenBlacklistService();
 
 export class DoctorService {
@@ -123,6 +122,7 @@ export class DoctorService {
     search?: Search,
     sortBy?: string,
     city?: string,
+    hospital?: string,
     specializations?: string[]
   ): Promise<ReadGetAllDrsDto> {
     const { skip, limit } = pagination;
@@ -133,6 +133,7 @@ export class DoctorService {
         .createQueryBuilder("doctor")
         .leftJoinAndSelect("doctor.image", "image")
         .leftJoinAndSelect("doctor.city", "city")
+        .leftJoinAndSelect("doctor.hospitals", "hospitals")
         .leftJoinAndSelect("doctor.specializations", "specializations");
 
       //filter by specialization
@@ -169,6 +170,10 @@ export class DoctorService {
         doctorsQuery.andWhere("city.value = :city", { city });
       }
 
+      if (hospital) {
+        doctorsQuery.andWhere("hospitals.name = :hospital", { hospital });
+      }
+
       // Apply sorting if provided
       if (sortBy) {
         const sortOptions: { [key: string]: "ASC" | "DESC" } = {
@@ -198,7 +203,6 @@ export class DoctorService {
 
       // Apply pagination
       const allDoctors = await doctorsQuery.skip(skip).take(limit).getMany();
-      console.log("SQL Query:", doctorsQuery.getSql());
       const totalPages = Math.ceil(totalDoctors / limit);
 
       const formattedDoctors = allDoctors.map((doctor) => ({
@@ -207,6 +211,9 @@ export class DoctorService {
         rating: doctor.rating,
         lastName: doctor.lastName,
         degree: doctor.degree,
+        hospital:
+          doctor.hospitals?.map((hos) => ({ id: hos.id, name: hos.name })) ||
+          [],
         city: doctor.city ? doctor.city.value : "",
         imageName: doctor.image?.imageName || null,
         specializations:
@@ -234,6 +241,7 @@ export class DoctorService {
         .createQueryBuilder("doctor")
         .leftJoinAndSelect("doctor.image", "image")
         .leftJoinAndSelect("doctor.city", "city")
+        .leftJoinAndSelect("doctor.hospitals", "hospitals")
         .leftJoinAndSelect("doctor.specializations", "specializations")
         .select([
           "doctor.id",
@@ -247,6 +255,7 @@ export class DoctorService {
           "city.value",
           "image.imageName",
           "specializations.value",
+          "hospitals.name",
         ])
         .where("doctor.id = :doctorId", { doctorId })
         .getOne();
@@ -266,7 +275,8 @@ export class DoctorService {
       const doctor = await this.doctorRepo
         .createQueryBuilder("doctor")
         .leftJoinAndSelect("doctor.image", "image")
-        .leftJoinAndSelect("doctor.specializations", "specializations")
+        .leftJoinAndSelect("doctor.specializations", "specialization")
+        .leftJoinAndSelect("doctor.hospitals", "hospital")
         .select([
           "doctor.id",
           "doctor.name",
@@ -279,7 +289,8 @@ export class DoctorService {
           "doctor.degree",
           "doctor.city",
           "image.imageName",
-          "doctor.specializations",
+          "specialization.value",
+          "hospital.name",
         ])
         .where("doctor.id = :doctorId", { doctorId })
         .getOne();

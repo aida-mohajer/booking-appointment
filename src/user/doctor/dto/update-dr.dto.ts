@@ -13,7 +13,7 @@ export class UpdateDrDto {
   @IsOptional()
   email?: string;
 
-  @IsEmail()
+  @IsString()
   @IsOptional()
   address?: string;
 
@@ -29,7 +29,7 @@ export class UpdateDrDto {
   @IsString()
   bio?: string;
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   cityId?: number;
 }

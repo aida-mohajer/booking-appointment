@@ -6,9 +6,6 @@ import { validatePatientLoginDto } from "./validations/patient-login.validation"
 import { CustomRequest } from "../../custom-request";
 import { authentication } from "../../middlewares/authentication";
 import { validatePatientUpdateDto } from "./validations/patient-update.validation";
-import { pagination } from "../../middlewares/pagination";
-import { validateDateQueryparams } from "./validations/validate-date-query-params.validation";
-import { search } from "../../middlewares/search";
 import { checkRole } from "../../middlewares/authorization";
 import { Role } from "../../enum/role.enum";
 
@@ -33,30 +30,18 @@ patientRouter.post(
 );
 
 patientRouter.get(
-  "/profile/:patientId?",
+  "/profile",
   authentication,
-  checkRole([Role.Admin, Role.Patient]),
+  checkRole([Role.Patient]),
   async (req: CustomRequest, res: Response) => {
     await patientController.getProfile(req, res);
   }
 );
 
-patientRouter.get(
-  "/with-appointments/doctor/:doctorId?",
-  authentication,
-  checkRole([Role.Admin, Role.Doctor]),
-  pagination,
-  search,
-  validateDateQueryparams,
-  async (req: CustomRequest, res: Response) => {
-    await patientController.getDrPatients(req, res);
-  }
-);
-
 patientRouter.put(
-  "/update/:patientId?",
+  "/update",
   authentication,
-  checkRole([Role.Admin, Role.Patient]),
+  checkRole([Role.Patient]),
   validatePatientUpdateDto,
   async (req: CustomRequest, res: Response) => {
     await patientController.updatePatient(req, res);
@@ -64,7 +49,7 @@ patientRouter.put(
 );
 
 patientRouter.post(
-  "/logout/:patientId?",
+  "/logout",
   authentication,
   checkRole([Role.Patient]),
   async (req: CustomRequest, res: Response) => {
@@ -73,9 +58,9 @@ patientRouter.post(
 );
 
 patientRouter.delete(
-  "/remove/:patientId?",
+  "/remove",
   authentication,
-  checkRole([Role.Admin, Role.Patient]),
+  checkRole([Role.Patient]),
   async (req: CustomRequest, res: Response) => {
     await patientController.removePatient(req, res);
   }

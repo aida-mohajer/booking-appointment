@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import { CustomRequest } from "../../custom-request";
 import { authentication } from "../../middlewares/authentication";
-import { validateId } from "../../id.validation";
 import { validateAdminRegisterDto } from "./validations/admin-register.validation";
 import { validateAdminLoginDto } from "./validations/admin-login-validation";
 import { validateAdminUpdateDto } from "./validations/admin-update.validation";

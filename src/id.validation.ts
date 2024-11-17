@@ -9,7 +9,15 @@ const isValidId = (id: string | undefined) => {
 };
 
 export const validateId = (req: Request, res: Response, next: NextFunction) => {
-  const { feedbackId, availabilityId, appointmentId, cityId } = req.params;
+  const {
+    feedbackId,
+    slotId,
+    appointmentId,
+    cityId,
+    hospitalId,
+    scheduleId,
+    exceptionId,
+  } = req.params;
 
   if (feedbackId && !isValidId(feedbackId)) {
     return res.status(400).json({
@@ -18,10 +26,9 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
     });
   }
 
-  if (availabilityId && !isValidId(availabilityId)) {
+  if (slotId && !isValidId(slotId)) {
     return res.status(400).json({
-      error:
-        "Invalid availability ID format. Please provide a valid positive integer.",
+      error: "Invalid slot ID format. Please provide a valid positive integer.",
     });
   }
   if (appointmentId && !isValidId(appointmentId)) {
@@ -34,6 +41,26 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
   if (cityId && !isValidId(cityId)) {
     return res.status(400).json({
       error: "Invalid city ID format. Please provide a valid positive integer.",
+    });
+  }
+
+  if (hospitalId && !isValidId(hospitalId)) {
+    return res.status(400).json({
+      error:
+        "Invalid hospital ID format. Please provide a valid positive integer.",
+    });
+  }
+
+  if (scheduleId && !isValidId(scheduleId)) {
+    return res.status(400).json({
+      error:
+        "Invalid schedule ID format. Please provide a valid positive integer.",
+    });
+  }
+  if (exceptionId && !isValidId(exceptionId)) {
+    return res.status(400).json({
+      error:
+        "Invalid exception ID format. Please provide a valid positive integer.",
     });
   }
 

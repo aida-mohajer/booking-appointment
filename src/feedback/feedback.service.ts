@@ -178,6 +178,8 @@ export class FeedbackService {
       return { error: "Internal server error" };
     }
   }
+
+  //helper function to calculate average rating of dr
   private async calculateDoctorRating(doctorId: number): Promise<number> {
     const [sumOfRatingsResult, rates] = await Promise.all([
       this.feedbackRepo

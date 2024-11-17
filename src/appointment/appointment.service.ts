@@ -5,57 +5,82 @@ import { Appointment } from "../entity/appointment.entity";
 import { Search } from "../middlewares/search";
 import { ReadGetAppointmentsByPatientDto } from "./dto/read-get-appointments-patient.dto";
 import { ReadGetAppointmentsByDrDto } from "./dto/read-get-appoitments-dr.dto";
-import { Availability } from "../entity/availability.entity";
 import { Pagination } from "../middlewares/pagination";
+import { CreateAppointmentDto } from "./dto/create-appointment.dto";
+import { DoctorSchedule } from "../entity/doctorSchedule.entity";
+import { Hospital } from "../entity/hospital.entity";
+import { DrScheduleService } from "../doctor-schedule/dr-schedule.service";
 
 export class AppointmentService {
   constructor(
-    private availabilityRepo = AppDataSource.getRepository(Availability),
+    private drScheduleRepo = AppDataSource.getRepository(DoctorSchedule),
     private appointmentRepo = AppDataSource.getRepository(Appointment),
+    private hospitalRepo = AppDataSource.getRepository(Hospital),
     private doctorRepo = AppDataSource.getRepository(Doctor)
   ) {}
 
+  drScheduleService = new DrScheduleService(this.drScheduleRepo);
+
   async createAppointment(
     patientId: number,
-    availabilityId: number
+    doctorId: number,
+    hospitalId: number,
+    data: CreateAppointmentDto
   ): Promise<{ message?: string; error?: string }> {
     try {
-      const availability = await this.availabilityRepo.findOne({
-        where: { id: availabilityId },
+      const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
+      if (!doctor) return { error: "Doctor not found" };
+
+      const hospital = await this.hospitalRepo.findOne({
+        where: { id: hospitalId },
       });
-      if (!availability) {
-        return { error: "Availability not found" };
+      if (!hospital) return { error: "Hospital not found" };
+
+      // Convert startDate and endDate strings to Date objects for comparison
+      const date = new Date(data.appointmentDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (date < today) {
+        return { error: "Date is in the past" };
       }
 
-      // Check if the availability date is a future date and time
-      const now = new Date();
-      const availabilityDateTime = new Date(availability.availableDate);
+      // Convert appointmentDate to a Date object and get the weekday
+      const weekday = date.toLocaleString("en-US", { weekday: "long" });
 
-      if (availabilityDateTime < now) {
-        return { error: "Cannot book an appointment for a past time." };
-      }
-
-      const doctor = await this.doctorRepo.findOne({
-        where: { id: availability.doctorId },
+      const schedule = await this.drScheduleRepo.findOne({
+        where: { weekDay: weekday, doctorId, hospitalId },
       });
-      if (!doctor) {
-        return { error: "Doctor not found" };
+      if (!schedule) {
+        return { error: "Doctor has no slot on this day" };
       }
 
-      if (availability.isAvailable == false) {
-        return { error: "This availability has already been booked." };
+      // Check if the selected time slot is available (not booked, not cancelled, and not in the past)
+      const availableSlots = await this.drScheduleService.getAvailableSlots(
+        doctorId,
+        hospitalId,
+        data.appointmentDate
+      );
+      const slotStatus = availableSlots.availableSlots?.find(
+        (slot) => slot.time === data.time
+      )?.status;
+
+      if (!slotStatus) {
+        return { error: "Invalid slot" }; // This would mean the slot doesn't exist in the available slots (e.g., it's outside the schedule)
+      }
+
+      if (slotStatus === "unavailable" || slotStatus === "booked") {
+        return { error: "The selected time slot is not available" };
       }
 
       const appointment = this.appointmentRepo.create({
-        availability,
-        patientId: patientId,
         doctor,
+        hospital,
+        patientId,
+        appointmentDate: data.appointmentDate,
+        time: data.time,
       });
       await this.appointmentRepo.save(appointment);
-
-      //change availability status
-      availability.isAvailable = false;
-      await this.availabilityRepo.save(availability);
 
       return { message: "Appointment created successfully" };
     } catch (error) {
@@ -66,25 +91,30 @@ export class AppointmentService {
 
   async getAppointmentsByDr(
     doctorId: number,
+    hospitalId: number,
     pagination: Pagination,
-    startDate: Date,
-    endDate: Date,
+    startDate: string,
+    endDate: string,
     search?: Search
   ): Promise<ReadGetAppointmentsByDrDto> {
     const { skip, limit } = pagination;
     const { name = "" } = search || {};
     try {
-      // Set endDate to include the full day
-      const adjustedEndDate = new Date(endDate);
-      adjustedEndDate.setHours(23, 59, 59, 999);
+      const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
+      if (!doctor) return { error: "Doctor not found" };
+
+      const hospital = await this.hospitalRepo.findOne({
+        where: { id: hospitalId },
+      });
+      if (!hospital) return { error: "Hospital not found" };
 
       let queryBuilder = this.appointmentRepo
         .createQueryBuilder("appointment")
-        .leftJoinAndSelect("appointment.availability", "availability")
         .leftJoinAndSelect("appointment.patient", "patient")
         .select([
           "appointment.id",
-          "availability.availableDate",
+          "appointment.appointmentDate",
+          "appointment.time",
           "patient.id",
           "patient.name",
           "patient.lastName",
@@ -96,17 +126,20 @@ export class AppointmentService {
         .where("appointment.doctorId = :doctorId", {
           doctorId,
         })
-        .andWhere("availability.availableDate >= :startDate", {
+        .andWhere("appointment.hospitalId = :hospitalId", {
+          hospitalId,
+        })
+        .andWhere("appointment.appointmentDate >= :startDate", {
           startDate,
         })
-        .andWhere("availability.availableDate <= :adjustedEndDate", {
-          adjustedEndDate,
+        .andWhere("appointment.appointmentDate <= :endDate", {
+          endDate,
         });
 
       //filter by patient name
       if (name) {
         queryBuilder.andWhere(
-          "(patient.name LIKE :name AND patient.lastName LIKE :lastName)",
+          "(patient.name LIKE :name OR patient.lastName LIKE :lastName)",
           {
             name: `%${name}%`,
             lastName: `%${name}%`,
@@ -118,7 +151,7 @@ export class AppointmentService {
 
       // Apply pagination
       const allAppointment = await queryBuilder
-        .orderBy("availability.availableDate", "ASC")
+        .orderBy("appointment.appointmentDate", "ASC")
         .skip(skip)
         .take(limit)
         .getMany();
@@ -141,23 +174,21 @@ export class AppointmentService {
 
   async getAppointmentsByPatient(
     patientId: number,
-    startDate?: Date,
-    endDate?: Date
+    startDate?: string,
+    endDate?: string
   ): Promise<ReadGetAppointmentsByPatientDto> {
     try {
-      let adjustedEndDate: Date | undefined;
-      if (endDate) {
-        adjustedEndDate = new Date(endDate);
-        adjustedEndDate.setHours(23, 59, 59, 999);
-      }
       const queryBuilder = this.appointmentRepo
         .createQueryBuilder("appointment")
-        .leftJoinAndSelect("appointment.availability", "availability")
         .leftJoinAndSelect("appointment.doctor", "doctor")
+        .leftJoinAndSelect("appointment.hospital", "hospital")
         .leftJoinAndSelect("doctor.specializations", "specializations")
         .select([
           "appointment.id",
-          "availability.availableDate",
+          "appointment.appointmentDate",
+          "appointment.time",
+          "hospital.id",
+          "hospital.name",
           "doctor.id",
           "doctor.name",
           "doctor.lastName",
@@ -168,19 +199,16 @@ export class AppointmentService {
         });
 
       if (startDate && endDate) {
-        queryBuilder.andWhere("availability.availableDate >= :startDate", {
+        queryBuilder.andWhere("appointment.appointmentDate >= :startDate", {
           startDate,
         });
-        queryBuilder.andWhere(
-          "availability.availableDate <= :adjustedEndDate",
-          {
-            adjustedEndDate,
-          }
-        );
+        queryBuilder.andWhere("appointment.appointmentDate <= :endDate", {
+          endDate,
+        });
       }
 
       const allAppointment = await queryBuilder
-        .orderBy("availability.availableDate", "ASC")
+        .orderBy("appointment.appointmentDate", "ASC")
         .getMany();
 
       return { response: allAppointment };
@@ -218,18 +246,6 @@ export class AppointmentService {
           await transactionalEntityManager.delete(Appointment, {
             id: appointmentId,
           });
-
-          // Update availability status
-          const updateAvailability = await transactionalEntityManager.findOne(
-            Availability,
-            {
-              where: { id: appointment.availabilityId },
-            }
-          );
-          if (updateAvailability) {
-            updateAvailability.isAvailable = true;
-            await transactionalEntityManager.save(updateAvailability);
-          }
 
           return { message: "Appointment removed successfully" };
         } catch (error) {

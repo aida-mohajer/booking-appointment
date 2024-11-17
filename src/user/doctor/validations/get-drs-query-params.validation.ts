@@ -13,6 +13,7 @@ export const validateGetDrsQuertParamsDto = async (
   const validParams = [
     "sortBy",
     "city",
+    "hospital",
     "specializations",
     "limit",
     "page",
@@ -27,11 +28,7 @@ export const validateGetDrsQuertParamsDto = async (
       error: `Invalid query parameter(s): ${invalidParams.join(", ")}`,
     });
   }
-  // const specializations = req.query.specializations
-  //   ? typeof req.query.specializations === "string"
-  //     ? (req.query.specializations as string).split(",")
-  //     : req.query.specializations
-  //   : undefined;
+
   const specializations = req.query.specializations
     ? (req.query.specializations as string).split(",")
     : [];

@@ -6,7 +6,6 @@ import { DoctorController } from "./doctor.controller";
 import { validateDrRegisterDto } from "./validations/dr-register.validation";
 import { validateDrLoginDto } from "./validations/dr-login.validation";
 import { validateDrUpdateDto } from "./validations/dr-update.validation";
-import { validateId } from "../../id.validation";
 import { pagination } from "../../middlewares/pagination";
 import { search } from "../../middlewares/search";
 import { validateGetDrsQuertParamsDto } from "./validations/get-drs-query-params.validation";
@@ -43,23 +42,23 @@ drRouter.get(
   }
 );
 
-drRouter.get("/:doctorId", async (req: CustomRequest, res: Response) => {
-  await drController.getDr(req, res);
-});
-
 drRouter.get(
-  "/profile/:doctorId?",
+  "/profile",
   authentication,
-  checkRole([Role.Admin, Role.Doctor]),
+  checkRole([Role.Doctor]),
   async (req: CustomRequest, res: Response) => {
     await drController.getProfile(req, res);
   }
 );
 
+drRouter.get("/get-dr/:doctorId", async (req: CustomRequest, res: Response) => {
+  await drController.getDr(req, res);
+});
+
 drRouter.put(
-  "/update/:doctorId?",
+  "/update",
   authentication,
-  checkRole([Role.Admin, Role.Doctor]),
+  checkRole([Role.Doctor]),
   validateDrUpdateDto,
   async (req: CustomRequest, res: Response) => {
     await drController.updateDr(req, res);

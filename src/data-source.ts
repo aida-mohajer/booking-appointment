@@ -7,11 +7,13 @@ import { Base } from "./entity/base.entity";
 import { Feedback } from "./entity/feedback.entity";
 import { Image } from "./entity/image.entity";
 import { Appointment } from "./entity/appointment.entity";
-import { Availability } from "./entity/availability.entity";
 import { Admin } from "./entity/admin.entity";
 import { RefreshToken } from "./entity/refresh_token.entity";
 import { Specialization } from "./entity/specialization.entity";
 import { City } from "./entity/city.entity";
+import { Hospital } from "./entity/hospital.entity";
+import { DoctorSchedule } from "./entity/doctorSchedule.entity";
+import { DrExceptions } from "./entity/drExceptions.entity";
 
 dotenv.config();
 
@@ -37,12 +39,14 @@ export const AppDataSource = new DataSource({
     Base,
     Feedback,
     Image,
-    Availability,
+    DoctorSchedule,
     Appointment,
     Admin,
     RefreshToken,
     Specialization,
     City,
+    Hospital,
+    DrExceptions,
   ],
   migrations: [__dirname + "/migration/*.ts"],
   subscribers: [],

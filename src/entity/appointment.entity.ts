@@ -3,13 +3,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Base } from "./base.entity";
 import { Doctor } from "./doctor.entity";
 import { Patient } from "./patient.entity";
-import { Availability } from "./availability.entity";
+import { Hospital } from "./hospital.entity";
 
 @Entity({ name: "appointment" })
 export class Appointment extends Base {
@@ -23,19 +22,29 @@ export class Appointment extends Base {
   patientId!: number;
 
   @Column({ nullable: true })
-  availabilityId!: number;
+  hospitalId!: number;
+
+  @Column({ nullable: true })
+  appointmentDate!: string;
+
+  @Column({ nullable: true })
+  time!: string;
 
   @ManyToOne(() => Patient, (patient) => patient.appointments, {
     onDelete: "CASCADE",
   })
+  @JoinColumn({ name: "patientId" })
   patient!: Patient;
 
   @ManyToOne(() => Doctor, (doctor) => doctor.appointments, {
     onDelete: "CASCADE",
   })
+  @JoinColumn({ name: "doctorId" })
   doctor!: Doctor;
 
-  @OneToOne(() => Availability, (availability) => availability.appointment)
-  @JoinColumn({ name: "availabilityId" })
-  availability!: Availability;
+  @ManyToOne(() => Hospital, (hospital) => hospital.appointments, {
+    onDelete: "CASCADE",
+  })
+  @JoinColumn({ name: "hospitalId" })
+  hospital!: Hospital;
 }

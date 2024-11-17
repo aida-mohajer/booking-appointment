@@ -13,10 +13,12 @@ import { Base } from "./base.entity";
 import { Feedback } from "./feedback.entity";
 import { Image } from "./image.entity";
 import { Appointment } from "./appointment.entity";
-import { Availability } from "./availability.entity";
 import { RefreshToken } from "./refresh_token.entity";
 import { Specialization } from "./specialization.entity";
 import { City } from "./city.entity";
+import { Hospital } from "./hospital.entity";
+import { DoctorSchedule } from "./doctorSchedule.entity";
+import { DrExceptions } from "./drExceptions.entity";
 
 @Entity({ name: "doctor" })
 export class Doctor extends Base {
@@ -71,8 +73,11 @@ export class Doctor extends Base {
   @OneToMany(() => Appointment, (appointment) => appointment.doctor)
   appointments!: Appointment[];
 
-  @OneToMany(() => Availability, (availability) => availability.doctor)
-  availability!: Availability[];
+  @OneToMany(() => DoctorSchedule, (doctorSchedule) => doctorSchedule.doctor)
+  doctorsSchedule!: DoctorSchedule[];
+
+  @OneToMany(() => DrExceptions, (drExceptions) => drExceptions.doctor)
+  drExceptions!: DrExceptions[];
 
   @ManyToMany(
     () => Specialization,
@@ -84,6 +89,13 @@ export class Doctor extends Base {
   )
   @JoinTable({ name: "doctors_specializations" })
   specializations!: Specialization[];
+
+  @ManyToMany(() => Hospital, (hospital) => hospital.doctors, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  @JoinTable({ name: "doctors_hospitals" })
+  hospitals!: Hospital[];
 
   @ManyToOne(() => City, (city) => city.doctors, {
     nullable: false,

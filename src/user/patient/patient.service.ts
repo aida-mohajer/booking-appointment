@@ -7,17 +7,12 @@ import { ReadLoginPatientDto } from "./dto/read-login-patient.dto";
 import { RegisterPatientDto } from "./dto/register-patient.dto";
 import { UpdatePatientDto } from "./dto/update-patient.dto";
 import { ReadGetPatientDto } from "./dto/read-get-patient.dto";
-import { Doctor } from "../../entity/doctor.entity";
-import { ReadGetAllPatientsDto } from "./dto/read-getall-patients.dto";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
-import { Pagination } from "../../middlewares/pagination";
-import { Search } from "../../middlewares/search";
 
 export class PatientService {
   constructor(
     private patientRepo = AppDataSource.getRepository(Patient),
-    private drRepo = AppDataSource.getRepository(Doctor),
     private refreshTokenRepo = AppDataSource.getRepository(RefreshToken)
   ) {}
   async registerPatient(
@@ -128,105 +123,6 @@ export class PatientService {
       };
     } catch (error) {
       console.error("Error during retrieve patient", error);
-      return { error: " An unexpected error occured" };
-    }
-  }
-
-  //get patients of dr in a year,month or day for history
-  //the year is mandatory here for filtering
-  //patients info and their appointments
-  //Note: this endpoint isnt for counting patients or appointments in a date,check the appointment module,it is just for get patients info
-  async getDrPatients(
-    doctorId: number,
-    pagination: Pagination,
-    year?: number,
-    search?: Search,
-    month?: number,
-    day?: number
-  ): Promise<ReadGetAllPatientsDto> {
-    const { skip, limit } = pagination;
-    const { name = "" } = search || {};
-
-    try {
-      const doctor = await this.drRepo.findOne({
-        where: { id: doctorId },
-      });
-      if (!doctor) {
-        return { error: "Doctor not found" };
-      }
-
-      let queryBuilder = this.patientRepo
-        .createQueryBuilder("patient")
-        .leftJoinAndSelect("patient.appointments", "appointment")
-        .leftJoinAndSelect("appointment.availability", "availability")
-        .select([
-          "appointment.id",
-          "availability.availableDate",
-          "patient.id",
-          "patient.name",
-          "patient.lastName",
-          "patient.email",
-          "patient.contactNumber",
-          "patient.age",
-          "patient.gender",
-        ])
-        .where("appointment.doctorId = :doctorId", { doctorId });
-
-      //filter by date
-      if (year && month && day) {
-        const searchDate = `${year}-${String(month).padStart(2, "0")}-${String(
-          day
-        ).padStart(2, "0")}`;
-        queryBuilder = queryBuilder.andWhere(
-          "CAST(availability.availableDate AS DATE) = :date",
-          { date: searchDate }
-        );
-      }
-      // Filter by entire month and year if only `year` and `month` are provided
-      else if (year && month) {
-        queryBuilder = queryBuilder.andWhere(
-          "YEAR(availability.availableDate) = :year AND MONTH(availability.availableDate) = :month",
-          { year, month }
-        );
-      } else if (year) {
-        queryBuilder = queryBuilder.andWhere(
-          "YEAR(availability.availableDate) = :year",
-          { year }
-        );
-      }
-
-      // Add search filter
-      if (name) {
-        queryBuilder.andWhere(
-          "(LOWER(patient.name) LIKE LOWER(:name) OR LOWER(patient.lastName) LIKE LOWER(:lastName))",
-          {
-            name: `%${name}%`,
-            lastName: `%${name}%`,
-          }
-        );
-      }
-
-      const totalPatients = await queryBuilder.getCount();
-
-      // Apply pagination
-      const allPatients = await queryBuilder
-        .orderBy("patient.name", "ASC")
-        .skip(skip)
-        .take(limit)
-        .getMany();
-
-      const totalPages = Math.ceil(totalPatients / limit);
-      return {
-        message:
-          totalPatients > 0
-            ? "Patients retrieved successfully"
-            : "No patient found matching the search criteria.",
-        response: allPatients,
-        totalPages,
-        totalPatients,
-      };
-    } catch (error) {
-      console.error("Error during retrieve patients", error);
       return { error: " An unexpected error occured" };
     }
   }

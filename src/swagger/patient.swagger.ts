@@ -41,7 +41,7 @@
  *                 type: string
  *                 format: email
  *                 description: The email address of the patient
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               password:
  *                 type: string
  *                 description: The password for the patient (minimum 8 characters)
@@ -83,7 +83,7 @@
  *                 type: string
  *                 format: email
  *                 description: The email of the patient.
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
  *               password:
  *                 type: string
  *                 description: The password for the patient.
@@ -101,18 +101,11 @@
 
 /**
  * @swagger
- * /api/patients/profile/{patientId}:
+ * /api/patients/profile:
  *   get:
  *     summary: Retrieve a patient's profile
- *     description: This endpoint allows an authenticated patient or admin to retrieve the profile details of a patient. Admins can specify the `patientId` as a parameter to retrieve any patient's profile, while patients can retrieve only their own profile.
+ *     description: This endpoint allows an authenticated patient retrieve the profile details.
  *     tags: [Patient]
- *     parameters:
- *       - in: path
- *         name: patientId
- *         schema:
- *           type: integer
- *         required: false
- *         description: The ID of the patient. Admin users can specify this to retrieve any patient's profile. Patients do not need to specify it, as they can only access their own profile.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -121,99 +114,18 @@
  *       401:
  *         description: Unauthorized - Invalid or missing authentication token
  *       403:
- *         description: Forbidden - Access is restricted to the patient's own profile or to admin users
+ *         description: Forbidden - Access is restricted to the patient's own profile
  *       404:
  *         description: Not Found - Patient not found
  */
 
 /**
  * @swagger
- * /api/patients/with-appointments/doctor/{doctorId}:
- *   get:
- *     summary: Retrieve patients with appointments for a specific doctor
- *     description: Fetches a list of patients who have appointments with a specified doctor, with optional filters for date and pagination.
- *     tags: [Patient]
- *     parameters:
- *       - in: path
- *         name: doctorId
- *         schema:
- *           type: integer
- *         required: false
- *         description: The ID of the doctor whose patients with appointments are to be retrieved.
- *       - in: query
- *         name: year
- *         schema:
- *           type: integer
- *           minimum: 2010
- *           maximum: 2025
- *         required: false
- *         description: Filter patients by the year of the appointment.
- *       - in: query
- *         name: month
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 12
- *         required: false
- *         description: Filter patients by the month of the appointment (1-12).
- *       - in: query
- *         name: day
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 31
- *         required: false
- *         description: Filter patients by the day of the appointment.
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *         required: true
- *         description: The page number for pagination.
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *         required: true
- *         description: The maximum number of patients to retrieve per page.
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         required: false
- *         description: Search for patients by name.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: List of patients with appointments retrieved successfully
- *       400:
- *         description: Bad request - Invalid query parameters
- *       401:
- *         description: Unauthorized - Invalid or missing authentication token
- *       403:
- *         description: Forbidden - Access is restricted to admin or doctor users
- *       404:
- *         description: Not Found - No patients found for the specified filters
- */
-
-/**
- * @swagger
- * /api/patients/update/{patientId}:
+ * /api/patients/update:
  *   put:
  *     summary: Update patient details
  *     description: This endpoint allows users to update details of an existing patient.
  *     tags: [Patient]
- *     parameters:
- *       - in: path
- *         name: patientId
- *         required: false
- *         description: The ID of the patient to update
- *         schema:
- *           type: string
- *         example: 12345
  *     requestBody:
  *       required: true
  *       content:
@@ -233,7 +145,11 @@
  *                 type: string
  *                 format: email
  *                 description: The email address of the patient
- *                 example: john.doe@example.com
+ *                 example: john.doe@gmail.com
+ *               password:
+ *                 type: string
+ *                 description: The password of the patient
+ *                 example: 12wq
  *               contactNumber:
  *                 type: string
  *                 description: The contact number of the patient
@@ -263,19 +179,11 @@
 
 /**
  * @swagger
- * /api/patients/logout/{patientId}:
+ * /api/patients/logout:
  *   post:
  *     summary: Log out a patient
- *     description: This endpoint allows a patient or an admin to log out a patient.
+ *     description: This endpoint allows a patient to log out a patient.
  *     tags: [Patient]
- *     parameters:
- *       - in: path
- *         name: patientId
- *         required: false
- *         description: The ID of the patient to log out
- *         schema:
- *           type: string
- *         example: 12345
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -293,19 +201,11 @@
 
 /**
  * @swagger
- * /api/patients/remove/{patientId}:
+ * /api/patients/remove:
  *   delete:
  *     summary: Remove a patient
- *     description: This endpoint allows a patient or an admin to remove a patient from the system.
+ *     description: This endpoint allows a patient to remove a patient from the system.
  *     tags: [Patient]
- *     parameters:
- *       - in: path
- *         name: patientId
- *         required: false
- *         description: The ID of the patient to remove
- *         schema:
- *           type: string
- *         example: 12345
  *     security:
  *       - bearerAuth: []
  *     responses:

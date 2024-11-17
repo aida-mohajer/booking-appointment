@@ -3,8 +3,6 @@ import {
   IsIn,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
-  IsPhoneNumber,
   IsString,
   Max,
   Min,

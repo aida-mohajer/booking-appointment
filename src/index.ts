@@ -14,8 +14,10 @@ import { uploadImageRouter } from "./dr-image/image.routes";
 import { tokenRouter } from "./refreshToken/token.routes";
 import { adminRouter } from "./user/admin/admin.routes";
 import { cityRouter } from "./city/city.routes";
-import { availabilityRouter } from "./availability/availibility.routes";
 import { appointmentRouter } from "./appointment/appointment.routes";
+import { hospitalRouter } from "./hospital/hospital.routes";
+import { drScheduleRouter } from "./doctor-schedule/dr-schedule.routes";
+import { drExceptionsRouter } from "./dr-exceptions/dr-exceptions.routes";
 // import swaggerDocument from "./swagger-output.json";
 
 dotenv.config();
@@ -31,11 +33,13 @@ app.use("/api/doctors", drRouter);
 app.use("/api/feedbacks", feedbackRouter);
 app.use("/api/images", uploadImageRouter);
 app.use("/api/cities", cityRouter);
-app.use("/api/availabilities", availabilityRouter);
+app.use("/api/drs-schedule", drScheduleRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/access-token", tokenRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/admins", adminRouter);
+app.use("/api/hospitals", hospitalRouter);
 app.use("/api/specializations", specializationRouter);
+app.use("/api/dr-exceptions", drExceptionsRouter);
 
 app.use(errorHandler);
 
