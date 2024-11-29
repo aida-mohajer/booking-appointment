@@ -9,6 +9,8 @@ import { Base } from "./base.entity";
 import { Feedback } from "./feedback.entity";
 import { Appointment } from "./appointment.entity";
 import { RefreshToken } from "./refresh_token.entity";
+import { PatientWallet } from "./patient-wallet.entity";
+// import { Payment } from "./payment.entities";
 
 @Entity({ name: "patient" })
 export class Patient extends Base {
@@ -45,6 +47,12 @@ export class Patient extends Base {
   @OneToMany(() => Appointment, (appointment) => appointment.patient)
   appointments!: Appointment[];
 
+  // @OneToMany(() => Payment, (payment) => payment.patient)
+  // payments!: Payment[];
+
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.patientId)
   refreshToken!: RefreshToken;
+
+  @OneToOne(() => PatientWallet, (wallet) => wallet.patient)
+  wallet!: PatientWallet;
 }

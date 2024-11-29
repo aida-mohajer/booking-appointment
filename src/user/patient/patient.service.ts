@@ -9,11 +9,13 @@ import { UpdatePatientDto } from "./dto/update-patient.dto";
 import { ReadGetPatientDto } from "./dto/read-get-patient.dto";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
+import { WalletService } from "../../wallet/wallet.service";
 
 export class PatientService {
   constructor(
     private patientRepo = AppDataSource.getRepository(Patient),
-    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken)
+    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken),
+    private walletService = new WalletService()
   ) {}
   async registerPatient(
     data: RegisterPatientDto
@@ -39,7 +41,9 @@ export class PatientService {
         gender: data.gender,
       });
 
-      await this.patientRepo.save(patient);
+      const savedPatient = await this.patientRepo.save(patient);
+
+      await this.walletService.createPatientWallet(savedPatient.id);
 
       return {
         message: "Patient registered successfully",

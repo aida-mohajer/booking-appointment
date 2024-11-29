@@ -73,12 +73,15 @@ export class AppointmentService {
         return { error: "The selected time slot is not available" };
       }
 
+      const price = schedule.price;
       const appointment = this.appointmentRepo.create({
         doctor,
         hospital,
         patientId,
         appointmentDate: data.appointmentDate,
         time: data.time,
+        status: "pending",
+        price,
       });
       await this.appointmentRepo.save(appointment);
 
@@ -115,6 +118,7 @@ export class AppointmentService {
           "appointment.id",
           "appointment.appointmentDate",
           "appointment.time",
+          "appointment.status",
           "patient.id",
           "patient.name",
           "patient.lastName",
@@ -128,6 +132,9 @@ export class AppointmentService {
         })
         .andWhere("appointment.hospitalId = :hospitalId", {
           hospitalId,
+        })
+        .andWhere("appointment.status = :status", {
+          status: "confirmed",
         })
         .andWhere("appointment.appointmentDate >= :startDate", {
           startDate,
@@ -182,17 +189,19 @@ export class AppointmentService {
         .createQueryBuilder("appointment")
         .leftJoinAndSelect("appointment.doctor", "doctor")
         .leftJoinAndSelect("appointment.hospital", "hospital")
-        .leftJoinAndSelect("doctor.specializations", "specializations")
+        // .leftJoinAndSelect("doctor.specializations", "specializations")
         .select([
           "appointment.id",
           "appointment.appointmentDate",
+          "appointment.status",
           "appointment.time",
+          "appointment.price",
           "hospital.id",
           "hospital.name",
           "doctor.id",
           "doctor.name",
           "doctor.lastName",
-          "specializations.value",
+          // "specializations.value",
         ])
         .where("appointment.patientId = :patientId", {
           patientId,
@@ -243,9 +252,11 @@ export class AppointmentService {
             };
           }
 
-          await transactionalEntityManager.delete(Appointment, {
-            id: appointmentId,
-          });
+          // await transactionalEntityManager.delete(Appointment, {
+          //   id: appointmentId,
+          // });
+          appointment.status = "cancelled";
+          await this.appointmentRepo.save(appointment);
 
           return { message: "Appointment removed successfully" };
         } catch (error) {

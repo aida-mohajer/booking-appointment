@@ -32,14 +32,14 @@ export class DoctorSchedule extends Base {
   @Column({ nullable: false })
   duration!: number;
 
+  @Column({ nullable: true, type: "decimal", precision: 10, scale: 2 })
+  price!: number;
+
   @Column({ nullable: false })
   startDate!: string;
 
   @Column({ nullable: false })
   endDate!: string;
-
-  // @Column({ nullable: false, default: "Available" })
-  // status!: "Available" | "IsBooked" | "Canceled";
 
   @ManyToOne(() => Doctor, (doctor) => doctor.doctorsSchedule, {
     onDelete: "CASCADE",
@@ -52,4 +52,7 @@ export class DoctorSchedule extends Base {
   })
   @JoinColumn({ name: "hospitalId" })
   hospital!: Hospital;
+
+  // @Column({ nullable: false, default: "Available" })
+  // status!: "Available" | "IsBooked" | "Canceled";
 }

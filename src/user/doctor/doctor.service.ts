@@ -15,6 +15,7 @@ import { Pagination } from "../../middlewares/pagination";
 import { Search } from "../../middlewares/search";
 import { RefreshTokenService } from "../../refreshToken/refresh-token";
 import { RefreshToken } from "../../entity/refresh_token.entity";
+import { WalletService } from "../../wallet/wallet.service";
 // import { TokenBlacklistService } from "../../token-blacklist.service";
 // const tokenBlacklistService = new TokenBlacklistService();
 
@@ -22,7 +23,8 @@ export class DoctorService {
   constructor(
     private doctorRepo = AppDataSource.getRepository(Doctor),
     private imageRepo = AppDataSource.getRepository(Image),
-    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken)
+    private refreshTokenRepo = AppDataSource.getRepository(RefreshToken),
+    private walletService = new WalletService()
   ) {}
   async registerDr(
     data: RegisterDrDto
@@ -60,7 +62,8 @@ export class DoctorService {
         cityId: data.cityId,
       });
 
-      await this.doctorRepo.save(doctor);
+      const savedDr = await this.doctorRepo.save(doctor);
+      await this.walletService.createDrWallet(savedDr.id);
 
       return {
         message: "Doctor registered successfully",

@@ -83,6 +83,7 @@ export class DrScheduleService {
         startDate: data.startDate,
         endDate: data.endDate,
         duration: data.duration,
+        price: data.price,
       });
 
       await this.drScheduleRepo.save(schedule);
@@ -125,6 +126,7 @@ export class DrScheduleService {
         .select([
           "doctorSchedule.id",
           "doctorSchedule.weekDay",
+          "doctorSchedule.price",
           "doctorSchedule.startTime",
           "doctorSchedule.endTime",
           "doctorSchedule.startDate",
@@ -219,6 +221,7 @@ export class DrScheduleService {
   ): Promise<{
     error?: string;
     availableSlots?: { time: string; status: string }[];
+    price?: number;
   }> {
     try {
       const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
@@ -260,7 +263,7 @@ export class DrScheduleService {
       }
 
       // Extract schedule details
-      const { startTime, endTime, duration } = schedule;
+      const { startTime, endTime, duration, price } = schedule;
 
       // Generate all possible slots based on the schedule
       const availableSlots = this.generateTimeSlots(
@@ -325,7 +328,7 @@ export class DrScheduleService {
         return { time: slot.time, status };
       });
 
-      return { availableSlots: slotsWithStatus };
+      return { availableSlots: slotsWithStatus, price: price };
     } catch (error) {
       console.error("Error in getAvailableSlots:", error);
       return { error: "An unexpected error occurred" };

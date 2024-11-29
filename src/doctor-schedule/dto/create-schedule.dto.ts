@@ -1,4 +1,11 @@
-import { IsIn, IsInt, IsNotEmpty, Matches } from "class-validator";
+import {
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  Matches,
+} from "class-validator";
 import { IsCustomDateString } from "../decorators/custom-date.decorator.";
 
 export class CreateScheduleDto {
@@ -37,4 +44,9 @@ export class CreateScheduleDto {
   @IsNotEmpty()
   @IsInt()
   duration!: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  price!: number;
 }

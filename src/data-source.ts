@@ -14,6 +14,9 @@ import { City } from "./entity/city.entity";
 import { Hospital } from "./entity/hospital.entity";
 import { DoctorSchedule } from "./entity/doctorSchedule.entity";
 import { DrExceptions } from "./entity/drExceptions.entity";
+import { PatientWallet } from "./entity/patient-wallet.entity";
+import { DoctorWallet } from "./entity/doctor-wallet.entity";
+import { Transaction } from "./entity/transaction.entity";
 
 dotenv.config();
 
@@ -47,6 +50,9 @@ export const AppDataSource = new DataSource({
     City,
     Hospital,
     DrExceptions,
+    DoctorWallet,
+    PatientWallet,
+    Transaction,
   ],
   migrations: [__dirname + "/migration/*.ts"],
   subscribers: [],

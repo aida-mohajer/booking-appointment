@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, Matches } from "class-validator";
+import { IsIn, IsInt, IsNumber, IsOptional, Matches } from "class-validator";
 import { IsCustomDateString } from "../decorators/custom-date.decorator.";
 
 export class UpdateScheduleDto {
@@ -37,4 +37,8 @@ export class UpdateScheduleDto {
   @IsOptional()
   @IsInt()
   duration?: number;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
 }

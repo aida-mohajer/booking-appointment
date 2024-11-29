@@ -19,6 +19,8 @@ import { City } from "./city.entity";
 import { Hospital } from "./hospital.entity";
 import { DoctorSchedule } from "./doctorSchedule.entity";
 import { DrExceptions } from "./drExceptions.entity";
+// import { Payment } from "./payment.entities";
+import { DoctorWallet } from "./doctor-wallet.entity";
 
 @Entity({ name: "doctor" })
 export class Doctor extends Base {
@@ -67,6 +69,9 @@ export class Doctor extends Base {
   @OneToOne(() => RefreshToken, (refreshToken) => refreshToken.doctorId)
   refreshToken!: RefreshToken;
 
+  @OneToOne(() => DoctorWallet, (wallet) => wallet.doctor)
+  wallet!: DoctorWallet;
+
   @OneToMany(() => Feedback, (feedback) => feedback.doctor)
   feedbacks!: Feedback[];
 
@@ -78,6 +83,9 @@ export class Doctor extends Base {
 
   @OneToMany(() => DrExceptions, (drExceptions) => drExceptions.doctor)
   drExceptions!: DrExceptions[];
+
+  // @OneToMany(() => Payment, (payment) => payment.doctor)
+  // payments!: Payment[];
 
   @ManyToMany(
     () => Specialization,

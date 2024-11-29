@@ -3,12 +3,14 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Base } from "./base.entity";
 import { Doctor } from "./doctor.entity";
 import { Patient } from "./patient.entity";
 import { Hospital } from "./hospital.entity";
+// import { Payment } from "./payment.entities";
 
 @Entity({ name: "appointment" })
 export class Appointment extends Base {
@@ -18,17 +20,23 @@ export class Appointment extends Base {
   @Column({ nullable: false })
   doctorId!: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   patientId!: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   hospitalId!: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   appointmentDate!: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   time!: string;
+
+  @Column({ nullable: true })
+  price!: number;
+
+  @Column({ nullable: false, default: "pending" }) //pending , confirmed, cancelled
+  status!: string;
 
   @ManyToOne(() => Patient, (patient) => patient.appointments, {
     onDelete: "CASCADE",
@@ -36,15 +44,14 @@ export class Appointment extends Base {
   @JoinColumn({ name: "patientId" })
   patient!: Patient;
 
-  @ManyToOne(() => Doctor, (doctor) => doctor.appointments, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => Doctor, (doctor) => doctor.appointments)
   @JoinColumn({ name: "doctorId" })
   doctor!: Doctor;
 
-  @ManyToOne(() => Hospital, (hospital) => hospital.appointments, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => Hospital, (hospital) => hospital.appointments)
   @JoinColumn({ name: "hospitalId" })
   hospital!: Hospital;
+
+  // @OneToOne(() => Payment, (payment) => payment.appointment)
+  // payment!: Payment;
 }

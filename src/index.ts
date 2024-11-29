@@ -18,7 +18,8 @@ import { appointmentRouter } from "./appointment/appointment.routes";
 import { hospitalRouter } from "./hospital/hospital.routes";
 import { drScheduleRouter } from "./doctor-schedule/dr-schedule.routes";
 import { drExceptionsRouter } from "./dr-exceptions/dr-exceptions.routes";
-// import swaggerDocument from "./swagger-output.json";
+import { paymentRouter } from "./payment/payment.routes";
+import { walletRouter } from "./wallet/wallet.routes";
 
 dotenv.config();
 
@@ -26,7 +27,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "../src/images")));
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/api/patients", patientRouter);
 app.use("/api/doctors", drRouter);
@@ -40,6 +40,8 @@ app.use("/api/admins", adminRouter);
 app.use("/api/hospitals", hospitalRouter);
 app.use("/api/specializations", specializationRouter);
 app.use("/api/dr-exceptions", drExceptionsRouter);
+app.use("/api/wallet", walletRouter);
+app.use("/api/payment", paymentRouter);
 
 app.use(errorHandler);
 
