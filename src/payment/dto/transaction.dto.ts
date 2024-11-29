@@ -4,11 +4,6 @@ export class TransactionDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
-  patientId!: number;
-
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
   appointmentId!: number;
 
   @IsInt()

@@ -30,9 +30,6 @@
  *           schema:
  *             type: object
  *             properties:
- *               patientId:
- *                 type: integer
- *                 description: The ID of the patient.
  *               doctorId:
  *                 type: integer
  *                 description: The ID of the doctor.

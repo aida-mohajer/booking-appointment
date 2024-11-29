@@ -32,11 +32,14 @@ export class WalletService {
     return await this.drWalletRepo.save(wallet);
   }
 
-  async chargeWallet(data: ChargeWalletDto): Promise<{ message: string }> {
+  async chargeWallet(
+    data: ChargeWalletDto,
+    patientId: number
+  ): Promise<{ message: string }> {
     return await AppDataSource.transaction(
       async (entityManager: EntityManager) => {
         const patientWallet = await entityManager.findOne(PatientWallet, {
-          where: { patientId: data.patientId },
+          where: { patientId: patientId },
         });
 
         if (!patientWallet) throw new Error("Patient wallet not found");

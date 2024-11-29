@@ -75,6 +75,11 @@
  *                 format: number
  *                 example: 15
  *                 description: The duration for make time slots.
+ *               price:
+ *                 type: number
+ *                 format: number
+ *                 example: 150
+ *                 description: The price of appointment.
  *     responses:
  *       '201':
  *         description: Schedule created successfully.

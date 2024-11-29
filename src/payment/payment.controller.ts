@@ -7,9 +7,17 @@ export class PaymentController {
   constructor(private paymentService: PaymentService) {}
   async transaction(req: CustomRequest, res: Response) {
     const data: TransactionDto = req.body;
+    const patientId = req.user?.id;
+    if (!patientId) {
+      res.status(400).json({ error: "Patient ID is required" });
+      return;
+    }
 
     try {
-      const transaction = await this.paymentService.transaction(data);
+      const transaction = await this.paymentService.transaction(
+        data,
+        patientId
+      );
       res.status(200).json({
         message: "Payment processed successfully",
         transaction,

@@ -11,22 +11,6 @@ export const walletRouter = express.Router();
 const walletService = new WalletService();
 const walletController = new WalletController(walletService);
 
-// walletRouter.post(
-//   "/create-patient-wallet",
-//   authentication,
-//   checkRole([Role.Patient]),
-//   (req: CustomRequest, res: Response) =>
-//     walletController.createPatientWallet(req, res)
-// );
-
-// walletRouter.post(
-//   "/create-doctor-wallet",
-//   authentication,
-//   checkRole([Role.Doctor]),
-//   (req: CustomRequest, res: Response) =>
-//     walletController.createDoctorWallet(req, res)
-// );
-
 walletRouter.post(
   "/charge",
   authentication,

@@ -11,12 +11,15 @@ export class PaymentService {
     private transactionRepo = AppDataSource.getRepository(Transaction)
   ) {}
 
-  async transaction(data: TransactionDto): Promise<Transaction> {
+  async transaction(
+    data: TransactionDto,
+    patientId: number
+  ): Promise<Transaction> {
     return await AppDataSource.transaction(
       async (entityManager: EntityManager) => {
         try {
           const patientWallet = await entityManager.findOne(PatientWallet, {
-            where: { patientId: data.patientId },
+            where: { patientId: patientId },
           });
           const doctorWallet = await entityManager.findOne(DoctorWallet, {
             where: { doctorId: data.doctorId },
@@ -42,7 +45,7 @@ export class PaymentService {
           await entityManager.save(doctorWallet);
 
           const patientTransaction = entityManager.create(Transaction, {
-            patientId: data.patientId,
+            patientId: patientId,
             doctorId: data.doctorId,
             balanceChange: -appointment.price,
             type: "patient_payment",
@@ -50,7 +53,7 @@ export class PaymentService {
           await entityManager.save(patientTransaction);
 
           const drTransaction = entityManager.create(Transaction, {
-            patientId: data.patientId,
+            patientId: patientId,
             doctorId: data.doctorId,
             balanceChange: appointment.price,
             type: "doctor_payment_received",
