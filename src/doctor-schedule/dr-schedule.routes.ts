@@ -27,8 +27,8 @@ drScheduleRouter.post(
 
 drScheduleRouter.get(
   "/hospital/:hospitalId/doctor/:doctorId?",
-  // authentication,
-  // checkRole([Role.Doctor, Role.Admin]),
+  authentication,
+  checkRole([Role.Doctor, Role.Admin]),
   validateId,
   async (req: CustomRequest, res: Response) => {
     await drScheduleController.getScheduleByDr(req, res);

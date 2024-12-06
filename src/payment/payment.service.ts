@@ -86,8 +86,18 @@ export class PaymentService {
 
       // Retrieve patient wallet history
       const patientTransactions = await this.transactionRepo.find({
+        relations: ["doctor"],
         where: { patientId: patientId, type: "patient_payment" },
         order: { timestamp: "DESC" }, // Order by most recent history first
+        select: {
+          balanceChange: true,
+          timestamp: true,
+          type: true,
+          doctor: {
+            name: true,
+            lastName: true,
+          },
+        },
       });
       return patientTransactions;
     } else if (walletType === "doctor") {
@@ -97,7 +107,18 @@ export class PaymentService {
       // Retrieve doctor wallet history
       const doctorHistory = await this.transactionRepo.find({
         where: { doctorId: doctorId, type: "doctor_payment_received" },
+        relations: ["patient"],
         order: { timestamp: "DESC" }, // Order by most recent history first
+        select: {
+          id: true,
+          balanceChange: true,
+          timestamp: true,
+          type: true,
+          patient: {
+            name: true,
+            lastName: true,
+          },
+        },
       });
       return doctorHistory;
     } else {

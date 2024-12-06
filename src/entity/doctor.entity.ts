@@ -19,7 +19,6 @@ import { City } from "./city.entity";
 import { Hospital } from "./hospital.entity";
 import { DoctorSchedule } from "./doctorSchedule.entity";
 import { DrExceptions } from "./drExceptions.entity";
-// import { Payment } from "./payment.entities";
 import { DoctorWallet } from "./doctor-wallet.entity";
 
 @Entity({ name: "doctor" })
@@ -83,9 +82,6 @@ export class Doctor extends Base {
 
   @OneToMany(() => DrExceptions, (drExceptions) => drExceptions.doctor)
   drExceptions!: DrExceptions[];
-
-  // @OneToMany(() => Payment, (payment) => payment.doctor)
-  // payments!: Payment[];
 
   @ManyToMany(
     () => Specialization,
